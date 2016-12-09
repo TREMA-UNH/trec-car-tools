@@ -1,4 +1,4 @@
-from trec_car_read_data import *
+from trec_car.read_data import *
 
 
 with open('release.outline', 'rb') as f:
@@ -11,16 +11,13 @@ with open('release.outline', 'rb') as f:
         
         print('heading3.2=',p.outline()[0])
 
-
-
-			
 			
 
 with open('release.paragraphs','rb') as f:
     for p in iter_paragraphs(f):
         print ('\n',p.para_id,':')
 		
-		# Print just the text
+        # Print just the text
         texts = [elem.text if isinstance(elem,ParaText) 
                 else elem.anchor_text 
                 for elem in p.bodies]

@@ -1,4 +1,4 @@
-# Use python 2.7. Will not work with Python 3!
+# Use python 3.5
 # conda install -c auto cbor=0.1.4
 
 from __future__ import print_function
@@ -52,11 +52,11 @@ class Page(object):
 
     def to_string(self):
         return self.page_name + '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' + '\n'.join(str(s) for s in self.skeleton)
-        
+
     def nested_headings(self):
         '''Each heading recursively represented by a pair of (heading, list_of_children) '''
         return [child.nested_headings() for child in self.skeleton]
-        
+
     def outline(self):
         return [heading for heading in self.skeleton if isinstance(heading,Section)]
 
@@ -71,8 +71,8 @@ class PageSkeleton(object):
             return Para(Paragraph.from_cbor(cbor[1]))
         else:
             assert(False)
-            
-	
+
+
 
 class Section(PageSkeleton):
     """
@@ -93,7 +93,7 @@ class Section(PageSkeleton):
 
     def __getitem__(self, idx):
         return self.children[idx]
-    
+
     def nested_headings(self):
         return (self.title, [child.nested_headings() for child in self.children])
 
@@ -139,7 +139,7 @@ class ParaBody(object):
             return ParaLink(cbor[1][1], cbor[2])
         else:
             assert(False)
-            
+
 
 
 class ParaText(ParaBody):
@@ -172,11 +172,11 @@ class ParaLink(ParaBody):
 
 
 def iter_paragraphs(file):
-	while True:
-		try:
-			yield Paragraph.from_cbor(cbor.load(file))
-		except EOFError:
-			break
+    while True:
+        try:
+            yield Paragraph.from_cbor(cbor.load(file))
+        except EOFError:
+            break
 
 def iter_annotations(file):
     while True:
