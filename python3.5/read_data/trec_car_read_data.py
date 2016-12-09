@@ -57,6 +57,8 @@ class Page(object):
         '''Each heading recursively represented by a pair of (heading, list_of_children) '''
         return [child.nested_headings() for child in self.skeleton]
         
+    def outline(self):
+        return [heading for heading in self.skeleton if isinstance(heading,Section)]
 
 class PageSkeleton(object):
     """ A minimal representation of the structure of a Wikipedia page. """
@@ -89,6 +91,9 @@ class Section(PageSkeleton):
         children = "".join(c.__str__(level=level+1) for c in self.children)
         return "%s %s %s\n\n%s" % (bar, self.title, bar, children)
 
+    def __getitem__(self, idx):
+        return self.children[idx]
+    
     def nested_headings(self):
         return (self.title, [child.nested_headings() for child in self.children])
 

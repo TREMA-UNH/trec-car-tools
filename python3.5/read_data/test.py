@@ -6,18 +6,14 @@ with open('release.outline', 'rb') as f:
         print('\npagename:',p.page_name)
 
         # get one data structure with nested (heading, [children]) pairs
-        print(p.nested_headings())
+        headings=p.nested_headings()
+        print(headings)
+        
+        print('heading3.2=',p.outline()[0])
 
-        # Or, traverse the structure
-        def print_heading_recursive(heading, level=0):	
-            if isinstance(heading, Section):
-                bar='-'*(level+1)
-                print('heading',bar ,heading.title)
-                for child in heading.children:
-                    print_heading_recursive(child, level+1)
-        for heading1 in p.skeleton: 
-            print_heading_recursive(heading1)
-		
+
+
+			
 			
 
 with open('release.paragraphs','rb') as f:
