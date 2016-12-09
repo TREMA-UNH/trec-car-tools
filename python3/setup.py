@@ -1,9 +1,9 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='trec-car-tools',
     version='1.0',
-    packages=['trec_car.read_data'],
+    packages=['trec_car'],
     url='trec-car.cs.unh.edu',
     license='BSD 3-Clause',
     author='laura-dietz',
