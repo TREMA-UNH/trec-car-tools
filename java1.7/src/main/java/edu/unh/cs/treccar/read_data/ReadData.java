@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import edu.unh.cs.treccar.read_data.Data;
 
 /**
  * User: dietz
@@ -15,29 +16,30 @@ import java.util.List;
  * Time: 1:56 PM
  */
 public class ReadData {
-
-    public static Iterator<Page> iterAnnotations(InputStream inputStream) throws CborException {
+    
+ 
+    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborException {
 
         final CborDecoder decode = new CborDecoder(inputStream);
 
-        return new Iterator<Page>(){
-            Page next = lowLevelNext();
+        return new Iterator<Data.Page>(){
+            Data.Page next = lowLevelNext();
             @Override
             public boolean hasNext() {
                 return next!=null;
             }
 
-            private Page lowLevelNext() throws CborException {
+            private Data.Page lowLevelNext() throws CborException {
                 DataItem dataItem = decode.decodeNext();
                 if (dataItem != null) {
-                    Page page = Page.fromCbor(dataItem);
+                    Data.Page page = pageFromCbor(dataItem);
                     return page;
                 } else return null;
             }
 
             @Override
-            public Page next() {
-                Page curr = next;
+            public Data.Page next() {
+                Data.Page curr = next;
                 try {
                     next = lowLevelNext();
                 } catch (CborException e) {
@@ -55,10 +57,10 @@ public class ReadData {
 
     }
 
-    public static Iterable<Page> iterableAnnotations(final InputStream inputStream) throws CborException {
-        return new Iterable<Page>() {
+    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborException {
+        return new Iterable<Data.Page>() {
             @Override
-            public Iterator<Page> iterator() {
+            public Iterator<Data.Page> iterator() {
                 try {
                     return iterAnnotations(inputStream);
                 } catch (CborException e) {
@@ -73,28 +75,28 @@ public class ReadData {
 
 
 
-    public static Iterator<Paragraph> iterParagraphs(InputStream inputStream) throws CborException {
+    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborException {
 
         final CborDecoder decode = new CborDecoder(inputStream);
 
-        return new Iterator<Paragraph>(){
-            Paragraph next = lowLevelNext();
+        return new Iterator<Data.Paragraph>(){
+            Data.Paragraph next = lowLevelNext();
             @Override
             public boolean hasNext() {
                 return next!=null;
             }
 
-            private Paragraph lowLevelNext() throws CborException {
+            private Data.Paragraph lowLevelNext() throws CborException {
                 DataItem dataItem = decode.decodeNext();
                 if (dataItem != null) {
-                    Paragraph paragraph = Paragraph.fromCbor(dataItem);
+                    Data.Paragraph paragraph = paragraphFromCbor(dataItem);
                     return paragraph;
                 } else return null;
             }
 
             @Override
-            public Paragraph next() {
-                Paragraph curr = next;
+            public Data.Paragraph next() {
+                Data.Paragraph curr = next;
                 try {
                     next = lowLevelNext();
                 } catch (CborException e) {
@@ -114,10 +116,10 @@ public class ReadData {
 
 
 
-    public static Iterable<Paragraph> iterableParagraphs(final InputStream inputStream) throws CborException {
-        return new Iterable<Paragraph>() {
+    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborException {
+        return new Iterable<Data.Paragraph>() {
             @Override
-            public Iterator<Paragraph> iterator() {
+            public Iterator<Data.Paragraph> iterator() {
                 try {
                     return iterParagraphs(inputStream);
                 } catch (CborException e) {
@@ -128,64 +130,57 @@ public class ReadData {
         };
     }
 
+    static Data.Page pageFromCbor(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
 
+        assert(array.get(0).getTag().getValue() == 0L);
 
-    static interface PageSkeleton {
-    }
-
-
-    public final static class Page {
-        String pageName;
-        List<PageSkeleton> skeleton;
-
-        public Page(String pageName, List<PageSkeleton> skeleton) {
-            this.pageName = pageName;
-            this.skeleton = skeleton;
-        }
-
-        static Page fromCbor(DataItem dataItem) {
-            List<DataItem> array = ((Array) dataItem).getDataItems();
-
-            assert(array.get(0).getTag().getValue() == 0L);
-
-            List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
-            assert(array2.get(0).getTag().getValue() == 0L);
+        List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
+        assert(array2.get(0).getTag().getValue() == 0L);
 
 //            ByteString heading = (ByteString) array2.getDataItems().get(1);
 //            new String(heading.getBytes())
-            UnicodeString heading = (UnicodeString) array2.get(1);
-            DataItem skeletons = array.get(2);
+        UnicodeString heading = (UnicodeString) array2.get(1);
+        DataItem skeletons = array.get(2);
 
-            return new Page(heading.getString(), pageSkeletonsFromCbor(skeletons));
-        }
+        return new Data.Page(heading.getString(), pageSkeletonsFromCbor(skeletons));
+    }
 
-        @Override
-        public String toString() {
-            return "Page{" +
-                    "pageName='" + pageName + '\'' +
-                    ", skeleton=" + skeleton +
-                    '}';
-        }
+    static Data.Para paraFromCbor(DataItem dataItem){
+        return new Data.Para(paragraphFromCbor(dataItem));
+    }
+
+    public static Data.Paragraph paragraphFromCbor(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+        assert(array.get(0).getTag().getValue() == 0L);
+
+        List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
+        assert(((UnsignedInteger) array2.get(0)).getValue().intValue() == 0);
+        ByteString paraid = ((ByteString) array2.get(1));
+
+//            List<DataItem> bodiesItem = ((Array) array.get(2)).getDataItems();
+        DataItem bodiesItem = ((Array) array.get(2));
+
+        return new Data.Paragraph( new String(paraid.getBytes()), paraBodiesFromCbor(bodiesItem));
     }
 
 
-
-    static PageSkeleton pageSkeletonFromCbor(DataItem dataItem){
+    static Data.PageSkeleton pageSkeletonFromCbor(DataItem dataItem){
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
         switch( ((UnsignedInteger) array.get(0)).getValue().intValue()) {
             case 0: {
                 UnicodeString heading = (UnicodeString) ((Array) array.get(1)).getDataItems().get(1);
-                return new Section(heading.getString(), pageSkeletonsFromCbor(array.get(2)));
+                return new Data.Section(heading.getString(), pageSkeletonsFromCbor(array.get(2)));
             }
-            case 1: return Para.fromCbor((array.get(1)));
+            case 1: return paraFromCbor((array.get(1)));
             default: throw new RuntimeException("pageSkeletonFromCbor found an unhandled case: "+array.toString());
         }
     }
-    static List<PageSkeleton> pageSkeletonsFromCbor(DataItem dataItem){
+    static List<Data.PageSkeleton> pageSkeletonsFromCbor(DataItem dataItem){
 
         Array skeletons = (Array) dataItem;
-        List<PageSkeleton> result = new ArrayList<PageSkeleton>();
+        List<Data.PageSkeleton> result = new ArrayList<Data.PageSkeleton>();
         for(DataItem item:skeletons.getDataItems()){
             if(isSpecialBreak(item))  break;
             result.add(pageSkeletonFromCbor(item));
@@ -194,33 +189,10 @@ public class ReadData {
     }
 
 
-    public final static class Section implements PageSkeleton{
-        String title;
-        List<PageSkeleton> children;
 
-        public Section(String title, List<PageSkeleton> children) {
-            this.title = title;
-            this.children = children;
-        }
-
-        @Override
-        public String toString() {
-            return "Section{" +
-                    "title='" + title + '\'' +
-                    ", children=" + children +
-                    '}';
-        }
-    }
-
-
-
-
-    static interface ParaBody {
-    }
-
-    static public List<ParaBody> paraBodiesFromCbor(DataItem dataItem) {
+    static public List<Data.ParaBody> paraBodiesFromCbor(DataItem dataItem) {
         Array bodies = (Array) dataItem;
-        List<ParaBody> result = new ArrayList<ParaBody>();
+        List<Data.ParaBody> result = new ArrayList<Data.ParaBody>();
         for (DataItem item : bodies.getDataItems()) {
             if (isSpecialBreak(item)) break;
             result.add(paraBodyFromCbor(item));
@@ -229,112 +201,25 @@ public class ReadData {
     }
 
 
-    static public ParaBody paraBodyFromCbor(DataItem dataItem) {
+    static public Data.ParaBody paraBodyFromCbor(DataItem dataItem) {
 
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
         switch( ((UnsignedInteger) array.get(0)).getValue().intValue()) {
             case 0: {
                 UnicodeString text = (UnicodeString) array.get(1);
-                return new ParaText(text.getString());
+                return new Data.ParaText(text.getString());
             }
             case 1: {
                 UnicodeString heading = (UnicodeString) ((Array) array.get(1)).getDataItems().get(1);
                 UnicodeString second = (UnicodeString) array.get(2);
-                return new ParaLink(heading.getString(), second.getString());
+                return new Data.ParaLink(heading.getString(), second.getString());
             }
             default: throw new RuntimeException("paraBodyFromCbor found an unhandled case: "+array.toString());
         }
     }
-
-    public final static class Para implements PageSkeleton {
-        Paragraph paragraph;
-
-        public Para(Paragraph paragraph) {
-            this.paragraph = paragraph;
-        }
-
-        static Para fromCbor(DataItem dataItem){
-            return new Para(Paragraph.fromCbor(dataItem));
-        }
-
-
-        @Override
-        public String toString() {
-            return "Para{" +
-                    "paragraph=" + paragraph +
-                    '}';
-        }
-    }
-
-    public final static class Paragraph  {
-        String paraId;
-        List<ParaBody> bodies;
-
-        public Paragraph(String paraId, List<ParaBody> bodies) {
-            this.paraId = paraId;
-            this.bodies = bodies;
-        }
-
-
-        @Override
-        public String toString() {
-            return "Paragraph{" +
-                    "paraId='" + paraId + '\'' +
-                    ", bodies=" + bodies +
-                    '}';
-        }
-
-        public static Paragraph fromCbor(DataItem dataItem) {
-            List<DataItem> array = ((Array) dataItem).getDataItems();
-            assert(array.get(0).getTag().getValue() == 0L);
-
-            List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
-            assert(((UnsignedInteger) array2.get(0)).getValue().intValue() == 0);
-            ByteString paraid = ((ByteString) array2.get(1));
-
-//            List<DataItem> bodiesItem = ((Array) array.get(2)).getDataItems();
-            DataItem bodiesItem = ((Array) array.get(2));
-
-            return new Paragraph( new String(paraid.getBytes()), paraBodiesFromCbor(bodiesItem));
-        }
-    }
-
-
-
-    public final static class ParaText implements ParaBody {
-        String text;
-
-        public ParaText(String text) {
-            this.text = text;
-        }
-
-        @Override
-        public String toString() {
-            return "ParaText{" +
-                    "text='" + text + '\'' +
-                    '}';
-        }
-    }
-
-    public final static class ParaLink implements ParaBody {
-        String anchorText;
-        String page;
-
-        public ParaLink(String anchorText, String page) {
-            this.anchorText = anchorText;
-            this.page = page;
-        }
-
-        @Override
-        public String toString() {
-            return "ParaLink{" +
-                    "anchorText='" + anchorText + '\'' +
-                    ", page='" + page + '\'' +
-                    '}';
-        }
-    }
-
+    
+    
     private static boolean isSpecialBreak(DataItem item) {
         return item.getMajorType()== MajorType.SPECIAL && ((Special) item).getSpecialType() == SpecialType.BREAK;
     }
