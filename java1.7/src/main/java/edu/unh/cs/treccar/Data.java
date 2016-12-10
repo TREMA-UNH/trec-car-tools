@@ -10,7 +10,7 @@ import java.util.List;
 public class Data {
 
 
-    static interface PageSkeleton {
+    public static interface PageSkeleton {
     }
 
 
@@ -50,7 +50,7 @@ public class Data {
         }
     }
 
-    static interface ParaBody {
+    public static interface ParaBody {
     }
 
     public final static class Para implements PageSkeleton {
