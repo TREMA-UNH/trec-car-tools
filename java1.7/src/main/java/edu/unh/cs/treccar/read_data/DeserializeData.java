@@ -8,14 +8,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import edu.unh.cs.treccar.read_data.Data;
+import edu.unh.cs.treccar.Data;
 
 /**
  * User: dietz
  * Date: 12/9/16
  * Time: 1:56 PM
  */
-public class ReadData {
+public class DeserializeData {
     
  
     public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborException {

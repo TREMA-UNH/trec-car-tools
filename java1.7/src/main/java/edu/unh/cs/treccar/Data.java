@@ -1,4 +1,4 @@
-package edu.unh.cs.treccar.read_data;
+package edu.unh.cs.treccar;
 
 import java.util.List;
 

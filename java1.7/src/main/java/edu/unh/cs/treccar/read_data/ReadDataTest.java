@@ -1,5 +1,7 @@
 package edu.unh.cs.treccar.read_data;
 
+import edu.unh.cs.treccar.Data;
+
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -12,7 +14,7 @@ public class ReadDataTest {
 
     public static void main(String[] args) throws Exception{
         final FileInputStream fileInputStream = new FileInputStream(new File("release.outline"));
-        for(Data.Page page: ReadData.iterableAnnotations(fileInputStream)) {
+        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
             System.out.println(page);
             System.out.println();
         }
@@ -21,7 +23,7 @@ public class ReadDataTest {
         System.out.println("\n\n");
 
        final FileInputStream fileInputStream2 = new FileInputStream(new File("release.paragraphs"));
-        for(Data.Paragraph p: ReadData.iterableParagraphs(fileInputStream2)) {
+        for(Data.Paragraph p: DeserializeData.iterableParagraphs(fileInputStream2)) {
             System.out.println(p);
             System.out.println();
         }
