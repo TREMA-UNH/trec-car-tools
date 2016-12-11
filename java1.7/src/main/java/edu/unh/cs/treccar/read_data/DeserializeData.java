@@ -213,7 +213,7 @@ public class DeserializeData {
             case 1: {
                 UnicodeString heading = (UnicodeString) ((Array) array.get(1)).getDataItems().get(1);
                 UnicodeString second = (UnicodeString) array.get(2);
-                return new Data.ParaLink(second.getString(), heading.getString());
+                return new Data.ParaLink(heading.getString(), second.getString());
             }
             default: throw new RuntimeException("paraBodyFromCbor found an unhandled case: "+array.toString());
         }

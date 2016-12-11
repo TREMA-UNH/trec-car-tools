@@ -140,7 +140,7 @@ public class Data {
         String anchorText;
         String page;
 
-        public ParaLink(String anchorText, String page) {
+        public ParaLink(String page, String anchorText) {
             this.anchorText = anchorText;
             this.page = page;
         }
