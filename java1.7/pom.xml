@@ -28,7 +28,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>org.lemurproject.galago.core.tools.App</mainClass>
+                            <mainClass>edu.unh.cs.treccar.read_data.ReadDataTest</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
