@@ -130,7 +130,7 @@ public class DeserializeData {
         };
     }
 
-    static Data.Page pageFromCbor(DataItem dataItem) {
+    public static Data.Page pageFromCbor(DataItem dataItem) {
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
         assert(array.get(0).getTag().getValue() == 0L);
@@ -146,7 +146,7 @@ public class DeserializeData {
         return new Data.Page(heading.getString(), pageSkeletonsFromCbor(skeletons));
     }
 
-    static Data.Para paraFromCbor(DataItem dataItem){
+    private static Data.Para paraFromCbor(DataItem dataItem){
         return new Data.Para(paragraphFromCbor(dataItem));
     }
 
@@ -165,7 +165,7 @@ public class DeserializeData {
     }
 
 
-    static Data.PageSkeleton pageSkeletonFromCbor(DataItem dataItem){
+    private static Data.PageSkeleton pageSkeletonFromCbor(DataItem dataItem){
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
         switch( ((UnsignedInteger) array.get(0)).getValue().intValue()) {
@@ -177,7 +177,7 @@ public class DeserializeData {
             default: throw new RuntimeException("pageSkeletonFromCbor found an unhandled case: "+array.toString());
         }
     }
-    static List<Data.PageSkeleton> pageSkeletonsFromCbor(DataItem dataItem){
+    private static List<Data.PageSkeleton> pageSkeletonsFromCbor(DataItem dataItem){
 
         Array skeletons = (Array) dataItem;
         List<Data.PageSkeleton> result = new ArrayList<Data.PageSkeleton>();
@@ -190,7 +190,7 @@ public class DeserializeData {
 
 
 
-    static public List<Data.ParaBody> paraBodiesFromCbor(DataItem dataItem) {
+    private static List<Data.ParaBody> paraBodiesFromCbor(DataItem dataItem) {
         Array bodies = (Array) dataItem;
         List<Data.ParaBody> result = new ArrayList<Data.ParaBody>();
         for (DataItem item : bodies.getDataItems()) {
@@ -201,7 +201,7 @@ public class DeserializeData {
     }
 
 
-    static public Data.ParaBody paraBodyFromCbor(DataItem dataItem) {
+    private static Data.ParaBody paraBodyFromCbor(DataItem dataItem) {
 
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
@@ -213,7 +213,7 @@ public class DeserializeData {
             case 1: {
                 UnicodeString heading = (UnicodeString) ((Array) array.get(1)).getDataItems().get(1);
                 UnicodeString second = (UnicodeString) array.get(2);
-                return new Data.ParaLink(heading.getString(), second.getString());
+                return new Data.ParaLink(second.getString(), heading.getString());
             }
             default: throw new RuntimeException("paraBodyFromCbor found an unhandled case: "+array.toString());
         }

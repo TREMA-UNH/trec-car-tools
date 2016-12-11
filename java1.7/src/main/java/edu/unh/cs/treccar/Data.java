@@ -23,6 +23,14 @@ public class Data {
             this.skeleton = skeleton;
         }
 
+        public String getPageName() {
+            return pageName;
+        }
+
+        public List<PageSkeleton> getSkeleton() {
+            return skeleton;
+        }
+
         @Override
         public String toString() {
             return "Page{" +
@@ -39,6 +47,14 @@ public class Data {
         public Section(String title, List<PageSkeleton> children) {
             this.title = title;
             this.children = children;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public List<PageSkeleton> getChildren() {
+            return children;
         }
 
         @Override
@@ -60,6 +76,10 @@ public class Data {
             this.paragraph = paragraph;
         }
 
+        public Paragraph getParagraph() {
+            return paragraph;
+        }
+
         @Override
         public String toString() {
             return "Para{" +
@@ -75,6 +95,14 @@ public class Data {
         public Paragraph(String paraId, List<ParaBody> bodies) {
             this.paraId = paraId;
             this.bodies = bodies;
+        }
+
+        public String getParaId() {
+            return paraId;
+        }
+
+        public List<ParaBody> getBodies() {
+            return bodies;
         }
 
         @Override
@@ -96,6 +124,10 @@ public class Data {
             this.text = text;
         }
 
+        public String getText() {
+            return text;
+        }
+
         @Override
         public String toString() {
             return "ParaText{" +
@@ -111,6 +143,14 @@ public class Data {
         public ParaLink(String anchorText, String page) {
             this.anchorText = anchorText;
             this.page = page;
+        }
+
+        public String getAnchorText() {
+            return anchorText;
+        }
+
+        public String getPage() {
+            return page;
         }
 
         @Override
