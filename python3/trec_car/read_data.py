@@ -4,6 +4,7 @@
 from __future__ import print_function
 import cbor
 import json
+import itertools
 
 class AnnotationsFile(object):
     def __init__(self, fname):
@@ -40,6 +41,25 @@ class Page(object):
     def __init__(self, page_name, skeleton):
         self.page_name = page_name
         self.skeleton = list(skeleton)
+
+
+    def deep_headings_list(self):
+        return [child.nested_headings() for child in self.skeleton if isinstance(child, Section) ]
+
+    def flat_headings_list(self):
+
+        def flatten(prefix, headings):
+            for heading, children in headings:
+                new_prefix = prefix + [heading]
+                if len(children)>0 :
+                    yield from flatten(new_prefix, children)
+                else:
+                    yield new_prefix
+
+        deep_headings = self.deep_headings_list()
+        return list(flatten([], deep_headings))
+
+
 
     @staticmethod
     def from_cbor(cbor):
@@ -86,6 +106,9 @@ class Section(PageSkeleton):
         self.title = title
         self.children = list(children)
 
+    def child_sections(self):
+        return [child for child in self.children if isinstance(child, Section)]
+
     def __str__(self, level=1):
         bar = "".join("="*level)
         children = "".join(c.__str__(level=level+1) for c in self.children)
@@ -95,7 +118,7 @@ class Section(PageSkeleton):
         return self.children[idx]
 
     def nested_headings(self):
-        return (self.title, [child.nested_headings() for child in self.children])
+        return (self.title, [child.nested_headings() for child in self.child_sections()])
 
 class Para(PageSkeleton):
     """
@@ -122,7 +145,7 @@ class Paragraph(object):
     def from_cbor(cbor):
         assert cbor[0] == 0
         assert cbor[1][0] == 0
-        return Paragraph(cbor[1][1], map(ParaBody.from_cbor, cbor[2]))
+        return Paragraph(cbor[1][1].decode('ascii'), map(ParaBody.from_cbor, cbor[2]))
 
     def __str__(self, level=None):
         return ''.join(str(body) for body in self.bodies)

@@ -8,7 +8,12 @@ with open('release.outline', 'rb') as f:
         headings = p.nested_headings()
         print(headings)
 
-        print('heading3.2=', p.outline()[0])
+        print('heading 1=', p.outline()[0])
+
+        print('deep headings= ',p.deep_headings_list())
+
+        print('flat headings= ' ,p.flat_headings_list())
+
 
 with open('release.paragraphs', 'rb') as f:
     for p in iter_paragraphs(f):
