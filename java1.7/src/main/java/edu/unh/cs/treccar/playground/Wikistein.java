@@ -47,6 +47,7 @@ public class Wikistein {
             return judgment;
         }
 
+        @Override
         public List<String> toTsvSeqments() {
             List<String> result = new ArrayList<>();
             result.add(pagename);
@@ -58,6 +59,7 @@ public class Wikistein {
         }
 
 
+        @Override
         public String toTsvLine() {
             return StringUtils.join(toTsvSeqments(), "\t");
         }
@@ -104,6 +106,19 @@ public class Wikistein {
         }
 
 
+        public List<String> toTsvSeqments() {
+            List<String> result = new ArrayList<>();
+            result.add(pagename);
+            result.add(sectionpath);
+            result.add(paragraphContent);
+            return result;
+        }
+
+
+        public String toTsvLine() {
+            return StringUtils.join(toTsvSeqments(), "\t");
+        }
+
 
         @Override
         public boolean equals(Object o) {
@@ -138,6 +153,7 @@ public class Wikistein {
             negativeParagraphs.add(paragraphContent);
         }
 
+        @Override
         public List<String> toTsvSeqments() {
             List<String> result = new ArrayList<>();
             result.add(pagename);
@@ -148,6 +164,7 @@ public class Wikistein {
         }
 
 
+        @Override
         public String toTsvLine() {
             return StringUtils.join(toTsvSeqments(), "\t");
         }
@@ -194,6 +211,19 @@ public class Wikistein {
                 final JudgedInstance positive = new JudgedInstance(instance, JudgedInstance.Judgment.Relevant);
                 megaresult.add(positive);
             }
+        }
+
+        fileInputStream.close();
+
+        return megaresult;
+    }
+
+    public List<Instance> extractClusteringData(final FileInputStream fileInputStream) throws CborException, IOException {
+        List<Instance> megaresult = new ArrayList<Instance>();
+
+        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
+            List<Instance> result = getInstances(page);
+            megaresult.addAll(result);
         }
 
         fileInputStream.close();
@@ -249,9 +279,10 @@ public class Wikistein {
         final String cborArticleInputFile = args[0];
         final String trainingOutputFile = args[1];
         final String testOutputFile = args[2];
+        final String clusterOutputFile = args[3];
 
 
-
+        System.out.println("training");
 
         {
             Wikistein wikistein = new Wikistein();
@@ -260,13 +291,15 @@ public class Wikistein {
             List<InstanceWithNegatives> trainData = wikistein.extractTrainData(fileInputStream);
             BufferedWriter trainWriter = new BufferedWriter(new FileWriter(new File(trainingOutputFile)));
             for(InstanceWithNegatives line: trainData){
-                System.out.println(line.toTsvSeqments());
+//                System.out.println(line.toTsvSeqments());
                 trainWriter.write(line.toTsvLine());
                 trainWriter.newLine();
             }
             trainWriter.close();
 
         }
+
+        System.out.println("testing");
 
 
         {
@@ -276,11 +309,30 @@ public class Wikistein {
             List<JudgedInstance> testData = wikistein.extractTestData(fileInputStream);
             BufferedWriter testWriter = new BufferedWriter(new FileWriter(new File(testOutputFile)));
             for(JudgedInstance line: testData){
-                System.out.println(line.toTsvSeqments());
+//                System.out.println(line.toTsvSeqments());
                 testWriter.write(line.toTsvLine());
                 testWriter.newLine();
             }
             testWriter.close();
+
+        }
+
+
+        System.out.println("cluster");
+
+
+        {
+            Wikistein wikistein = new Wikistein();
+            final FileInputStream fileInputStream = new FileInputStream(new File(cborArticleInputFile));
+
+            List<Instance> testData = wikistein.extractClusteringData(fileInputStream);
+            BufferedWriter clusterWriter = new BufferedWriter(new FileWriter(new File(clusterOutputFile)));
+            for(Instance line: testData){
+//                System.out.println(line.toTsvSeqments());
+                clusterWriter.write(line.toTsvLine());
+                clusterWriter.newLine();
+            }
+            clusterWriter.close();
 
         }
 
