@@ -20,22 +20,117 @@ public class Wikistein {
         forbiddenHeadings = new HashSet<>();
         forbiddenHeadings.add("see also");
         forbiddenHeadings.add("external links");
-
+        forbiddenHeadings.add("references");
+        forbiddenHeadings.add("external links");
+        forbiddenHeadings.add("notes");
+        forbiddenHeadings.add("bibliography");
+        forbiddenHeadings.add("further reading");
     }
 
-    public static class Line{
-        public String pagename;
-        public String sectionpath;
-        public String paragraphId;
-        public String paragraphContent;
-        public List<String> negativeParagraphs = new ArrayList<>();
+    public static class JudgedInstance extends Instance {
+
+        public enum Judgment {Relevant, SameArticleWrongSection, WrongArticle}
+
+        protected Judgment judgment = Judgment.WrongArticle;
+
+        public JudgedInstance(String pagename, String sectionpath, String paragraphId, String paragraphContent, Judgment judgment) {
+            super(pagename, sectionpath, paragraphId,paragraphContent);
+            this.judgment = judgment;
+        }
+
+        public JudgedInstance(Instance instance, Judgment judgment){
+            this(instance.pagename, instance.sectionpath, instance.paragraphId, instance.paragraphContent, judgment);
+        }
 
 
-        public Line(String pagename, String sectionpath, String paragraphId, String paragraphContent) {
+        public Judgment getJudgment() {
+            return judgment;
+        }
+
+        public List<String> toTsvSeqments() {
+            List<String> result = new ArrayList<>();
+            result.add(pagename);
+            result.add(sectionpath);
+            result.add(paragraphContent);
+
+            result.add(judgment.toString());  // any preference on the judgment coding?
+            return result;
+        }
+
+
+        public String toTsvLine() {
+            return StringUtils.join(toTsvSeqments(), "\t");
+        }
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof JudgedInstance)) return false;
+            if (!super.equals(o)) return false;
+
+            JudgedInstance that = (JudgedInstance) o;
+
+            if (judgment != that.judgment) return false;
+            if (super.pagename != null ? !super.pagename.equals(super.pagename) : super.pagename != null) return false;
+            if (super.sectionpath != null ? !super.sectionpath.equals(super.sectionpath) : super.sectionpath != null)
+                return false;
+            return super.paragraphId != null ? super.paragraphId.equals(super.paragraphId) : super.paragraphId == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + (judgment != null ? judgment.hashCode() : 0);
+            result = 31 * result + (super.pagename != null ? super.pagename.hashCode() : 0);
+            result = 31 * result + (super.sectionpath != null ? super.sectionpath.hashCode() : 0);
+            result = 31 * result + (super.paragraphId != null ? super.paragraphId.hashCode() : 0);
+            return result;
+        }
+    }
+
+    public static class Instance{
+        protected String pagename;
+        protected String sectionpath;
+        protected String paragraphId;
+        protected String paragraphContent;
+
+
+        public Instance(String pagename, String sectionpath, String paragraphId, String paragraphContent) {
             this.pagename = pagename;
             this.sectionpath = sectionpath;
             this.paragraphId = paragraphId;
             this.paragraphContent = paragraphContent;
+        }
+
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Instance instance = (Instance) o;
+
+            return paragraphId != null ? paragraphId.equals(instance.paragraphId) : instance.paragraphId == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return paragraphId != null ? paragraphId.hashCode() : 0;
+        }
+    }
+
+    public static class InstanceWithNegatives extends Instance {
+        protected List<String> negativeParagraphs = new ArrayList<>();
+
+
+        public InstanceWithNegatives(String pagename, String sectionpath, String paragraphId, String paragraphContent) {
+            super(pagename, sectionpath, paragraphId, paragraphContent);
+        }
+
+        public InstanceWithNegatives(Instance instance){
+            this(instance.pagename, instance.sectionpath, instance.paragraphId, instance.paragraphContent);
         }
 
 
@@ -58,90 +153,88 @@ public class Wikistein {
         }
 
 
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Line line = (Line) o;
-
-            return paragraphId != null ? paragraphId.equals(line.paragraphId) : line.paragraphId == null;
-        }
-
-        @Override
-        public int hashCode() {
-            return paragraphId != null ? paragraphId.hashCode() : 0;
-        }
     }
 
     // --------------------------------
 
 
-    private List<Line> recurseArticle(Data.PageSkeleton skel, String pagename, String sectionpath){
-
-        if(skel instanceof Data.Section){
-            final Data.Section section = (Data.Section) skel;
-            String heading = section.getTitle();
-            if(forbiddenHeadings.contains(heading.toLowerCase())) return Collections.emptyList();
-            else {
-                List<Line> result = new ArrayList<>();
-                for (Data.PageSkeleton child : section.getChildren()) {
-                    result.addAll(recurseArticle(child, pagename, sectionpath + " " + heading));
-                }
-                return result;
-            }
-
-        } else if (skel instanceof Data.Para) {
-            Data.Para para = (Data.Para) skel;
-            Data.Paragraph paragraph = para.getParagraph();
-
-            String text = "";
-            for(Data.ParaBody body: paragraph.getBodies()){
-                if(body instanceof Data.ParaLink) text += ((Data.ParaLink)body).getAnchorText();
-                if(body instanceof Data.ParaText) text += ((Data.ParaText)body).getText();
-            }
-            if(text.length()>10 && sectionpath.length()>3) {
-                Line line = new Line(pagename, sectionpath, paragraph.getParaId(), text);
-                return Collections.singletonList(line);
-            } else return Collections.emptyList();
-        }
-        else throw new UnsupportedOperationException("not known skel "+skel);
-    }
-
-
-
-
-    public List<Line> doit(final FileInputStream fileInputStream) throws CborException {
-        List<Line> megaresult = new ArrayList<Line>();
+    public List<InstanceWithNegatives> extractTrainData(final FileInputStream fileInputStream) throws CborException, IOException {
+        List<InstanceWithNegatives> megaresult = new ArrayList<InstanceWithNegatives>();
 
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
 
-            List<Line> result = new ArrayList<Line>();
-            for(Data.PageSkeleton skel: page.getSkeleton()){
-                result.addAll(recurseArticle(skel, page.getPageName(), ""));
-            }
+            List<Instance> result = getInstances(page);
 
-            for(Line line:result) {
-                Set<Line> paras = drawRandomParagraphs(result, 4, line.sectionpath);
-                for(Line p : paras) {
-                    line.addNegativeParagraph(p.paragraphContent);
+            for(Instance instance1:result) {
+                final InstanceWithNegatives instanceWithNegatives = new InstanceWithNegatives(instance1);
+                Set<Instance> paras = drawRandomParagraphs(result, 4, instance1.sectionpath);
+                for(Instance instance2 : paras) {
+                    instanceWithNegatives.addNegativeParagraph(instance2.paragraphContent);
                 }
+                megaresult.add(instanceWithNegatives);
             }
-
-            megaresult.addAll(result);
         }
+
+        fileInputStream.close();
 
         return megaresult;
     }
 
+    public List<JudgedInstance> extractTestData(final FileInputStream fileInputStream) throws CborException, IOException {
+        List<JudgedInstance> megaresult = new ArrayList<JudgedInstance>();
+
+        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
+            List<Instance> result = getInstances(page);
+            for(Instance instance:result) {
+               Set<Instance> paras = drawRandomParagraphs(result, 4, instance.sectionpath);
+                for(Instance negInstance : paras) {
+                    JudgedInstance negative = new  JudgedInstance(instance.pagename, instance.sectionpath, negInstance.paragraphId, negInstance.paragraphContent, JudgedInstance.Judgment.SameArticleWrongSection);
+                    megaresult.add(negative);
+                }
+                final JudgedInstance positive = new JudgedInstance(instance, JudgedInstance.Judgment.Relevant);
+                megaresult.add(positive);
+            }
+        }
+
+        fileInputStream.close();
+
+        return megaresult;
+    }
+
+    private List<Instance> getInstances(Data.Page page) {
+        List<Instance> result = new ArrayList<Instance>();
+
+        for(Data.Page.SectionPathParagraphs sectpara:page.flatSectionPathsParagraphs()) {
+            final String sectionpath = StringUtils.join(sectpara.getSectionPath(), " ");
+
+            boolean isExcludeItem = false;
+
+            if(sectpara.getSectionPath().isEmpty()) isExcludeItem = true; // skip lead paragraph
+            for(String heading: sectpara.getSectionPath()) {
+                if (forbiddenHeadings.contains(heading.toLowerCase())) isExcludeItem = true;
+            }
+
+
+            final String paraId = sectpara.getParagraph().getParaId();
+            final String paratext = sectpara.getParagraph().getTextOnly();
+
+            if(paratext.length()<10) isExcludeItem = true;
+
+            if(!isExcludeItem) {
+                Instance line = new Instance(page.getPageName(), sectionpath, paraId, paratext);
+                result.add(line);
+            }
+        }
+        return result;
+    }
+
     //--------------------------------
 
-    private static Set<Line> drawRandomParagraphs(List<Line> lines, int draws, String notSectionPathPrefix){
-        Set<Line> samples = new HashSet<>();
+    private static Set<Instance> drawRandomParagraphs(List<Instance> lines, int draws, String notSectionPathPrefix){
+        Set<Instance> samples = new HashSet<>();
         int abortCounter = 100;
         while (samples.size()<draws && abortCounter>0){
-            Line sample = lines.get(new Random().nextInt(lines.size()));
+            Instance sample = lines.get(new Random().nextInt(lines.size()));
             if(!sample.sectionpath.startsWith(notSectionPathPrefix)){
                 samples.add(sample);
             }
@@ -153,21 +246,43 @@ public class Wikistein {
 
 
     public static void main(String[] args) throws IOException, CborException {
-        final FileInputStream fileInputStream = new FileInputStream(new File(args[0]));
+        final String cborArticleInputFile = args[0];
+        final String trainingOutputFile = args[1];
+        final String testOutputFile = args[2];
 
-        Wikistein wikistein = new Wikistein();
-        List<Line> result = wikistein.doit(fileInputStream);
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(args[1])));
 
-        for(Line line: result){
-            System.out.println(line.toTsvSeqments());
-            writer.write(line.toTsvLine());
-            writer.newLine();
+
+        {
+            Wikistein wikistein = new Wikistein();
+            final FileInputStream fileInputStream = new FileInputStream(new File(cborArticleInputFile));
+
+            List<InstanceWithNegatives> trainData = wikistein.extractTrainData(fileInputStream);
+            BufferedWriter trainWriter = new BufferedWriter(new FileWriter(new File(trainingOutputFile)));
+            for(InstanceWithNegatives line: trainData){
+                System.out.println(line.toTsvSeqments());
+                trainWriter.write(line.toTsvLine());
+                trainWriter.newLine();
+            }
+            trainWriter.close();
 
         }
 
-        writer.close();
+
+        {
+            Wikistein wikistein = new Wikistein();
+            final FileInputStream fileInputStream = new FileInputStream(new File(cborArticleInputFile));
+
+            List<JudgedInstance> testData = wikistein.extractTestData(fileInputStream);
+            BufferedWriter testWriter = new BufferedWriter(new FileWriter(new File(testOutputFile)));
+            for(JudgedInstance line: testData){
+                System.out.println(line.toTsvSeqments());
+                testWriter.write(line.toTsvLine());
+                testWriter.newLine();
+            }
+            testWriter.close();
+
+        }
 
     }
 

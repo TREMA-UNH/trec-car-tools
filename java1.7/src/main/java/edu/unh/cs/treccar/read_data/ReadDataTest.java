@@ -4,6 +4,7 @@ import edu.unh.cs.treccar.Data;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 
 /**
  * User: dietz
@@ -13,6 +14,26 @@ import java.io.FileInputStream;
 public class ReadDataTest {
 
     public static void main(String[] args) throws Exception{
+        final FileInputStream fileInputStream3 = new FileInputStream(new File("release.articles"));
+        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream3)) {
+            for (List<String> line : page.flatSectionPaths()){
+                System.out.println(line);
+            }
+            System.out.println();
+        }
+
+        System.out.println("\n\n");
+
+        final FileInputStream fileInputStream4 = new FileInputStream(new File("release.articles"));
+        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream4)) {
+            for (Data.Page.SectionPathParagraphs line : page.flatSectionPathsParagraphs()){
+                System.out.println(line.getSectionPath()+"\t"+line.getParagraph().getTextOnly());
+            }
+            System.out.println();
+        }
+
+
+        System.out.println("\n\n");
         final FileInputStream fileInputStream = new FileInputStream(new File("release.outline"));
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
             System.out.println(page);
