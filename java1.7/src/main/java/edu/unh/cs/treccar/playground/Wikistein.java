@@ -102,7 +102,7 @@ public class Wikistein {
             this.pagename = pagename;
             this.sectionpath = sectionpath;
             this.paragraphId = paragraphId;
-            this.paragraphContent = paragraphContent;
+            this.paragraphContent = paragraphContent.replaceAll("[\n\t\r]"," ");
         }
 
 
@@ -150,7 +150,7 @@ public class Wikistein {
 
 
         public void addNegativeParagraph(String paragraphContent) {
-            negativeParagraphs.add(paragraphContent);
+            negativeParagraphs.add(paragraphContent.replaceAll("[\n\t\r]"," "));
         }
 
         @Override
