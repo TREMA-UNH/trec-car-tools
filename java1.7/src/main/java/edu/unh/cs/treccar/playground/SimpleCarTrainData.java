@@ -198,19 +198,28 @@ public class SimpleCarTrainData {
 
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
 
-            List<Instance> result = getInstances(page);
+            try{
+                List<Instance> result = getInstances(page);
 
-            for(Instance instance1:result) {
-                final InstanceWithNegatives instanceWithNegatives = new InstanceWithNegatives(instance1);
-                Set<Instance> paras = drawRandomParagraphs(result, 4, instance1.sectionpath);
+                for(Instance instance1:result) {
+                    final InstanceWithNegatives instanceWithNegatives = new InstanceWithNegatives(instance1);
+                    Set<Instance> paras = drawRandomParagraphs(result, 4, instance1.sectionpath);
 
-                if(paras.size()==4) {  // only consider positive instances with 4 negative instances  --handled elsewhere
-                    for (Instance instance2 : paras) {
-                        instanceWithNegatives.addNegativeParagraph(instance2.paragraphContent);
+                    if(paras.size()==4) {  // only consider positive instances with 4 negative instances  --handled elsewhere
+                        for (Instance instance2 : paras) {
+                            instanceWithNegatives.addNegativeParagraph(instance2.paragraphContent);
+                        }
+                        megaresult.add(instanceWithNegatives);
+                    } else {
+                        System.err.println("COuld not draw 4 elements from page "+page.getPageName());
+                        System.out.println("instanceWithNegatives = " + instanceWithNegatives);
                     }
-                    megaresult.add(instanceWithNegatives);
+
                 }
+            } catch (NotEnoughNegativesException ex){
+                System.err.println("Not enough negatives for sectionpath "+ex.getNotSectionPathPrefix()+" in page "+page.getPageName());
             }
+
         }
 
         fileInputStream.close();
@@ -222,19 +231,25 @@ public class SimpleCarTrainData {
         List<JudgedInstance> megaresult = new ArrayList<JudgedInstance>();
 
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
-            List<Instance> result = getInstances(page);
-            for(Instance instance:result) {
-               Set<Instance> paras = drawRandomParagraphs(result, 4, instance.sectionpath);
 
-               if(paras.size()==4) {  // only consider positive instances with 4 negative instances  --handled elsewhere
+            try {
 
-                   for (Instance negInstance : paras) {
-                       JudgedInstance negative = new JudgedInstance(instance.pagename, instance.sectionpath, negInstance.paragraphId, negInstance.paragraphContent, JudgedInstance.Judgment.SameArticleWrongSection);
-                       megaresult.add(negative);
-                   }
-                   final JudgedInstance positive = new JudgedInstance(instance, JudgedInstance.Judgment.Relevant);
-                   megaresult.add(positive);
-               }
+                List<Instance> result = getInstances(page);
+                for (Instance instance : result) {
+                    Set<Instance> paras = drawRandomParagraphs(result, 4, instance.sectionpath);
+
+                    if (paras.size() == 4) {  // only consider positive instances with 4 negative instances  --handled elsewhere
+
+                        for (Instance negInstance : paras) {
+                            JudgedInstance negative = new JudgedInstance(instance.pagename, instance.sectionpath, negInstance.paragraphId, negInstance.paragraphContent, JudgedInstance.Judgment.SameArticleWrongSection);
+                            megaresult.add(negative);
+                        }
+                        final JudgedInstance positive = new JudgedInstance(instance, JudgedInstance.Judgment.Relevant);
+                        megaresult.add(positive);
+                    }
+                }
+            } catch (NotEnoughNegativesException ex){
+                System.err.println("Not enough negatives for sectionpath "+ex.getNotSectionPathPrefix()+" in page "+page.getPageName());
             }
         }
 
@@ -247,8 +262,13 @@ public class SimpleCarTrainData {
         List<Instance> megaresult = new ArrayList<Instance>();
 
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
-            List<Instance> result = getInstances(page);
-            megaresult.addAll(result);
+            try{
+                List<Instance> result = getInstances(page);
+                megaresult.addAll(result);
+            } catch (NotEnoughNegativesException ex){
+                System.err.println("Not enough negatives for sectionpath "+ex.getNotSectionPathPrefix()+" in page "+page.getPageName());
+            }
+
         }
 
         fileInputStream.close();
@@ -261,7 +281,7 @@ public class SimpleCarTrainData {
      * @param page
      * @return
      */
-    private List<Instance> getInstances(Data.Page page) {
+    private List<Instance> getInstances(Data.Page page) throws NotEnoughNegativesException {
         List<Instance> result = new ArrayList<Instance>();
 
         for(Data.Page.SectionPathParagraphs sectpara:page.flatSectionPathsParagraphs()) {
@@ -286,9 +306,10 @@ public class SimpleCarTrainData {
         }
 
         return filterInstancesWithFewNegatives(result, 4);
+//        return result;
     }
 
-    private List<Instance> filterInstancesWithFewNegatives(List<Instance> result, int minNegs) {
+    private List<Instance> filterInstancesWithFewNegatives(List<Instance> result, int minNegs) throws NotEnoughNegativesException {
         // kill sections that have less than four negatives
         HashMap<String, Integer> sectionCounts = new HashMap<>();
         for(Instance instance: result) {
@@ -300,31 +321,55 @@ public class SimpleCarTrainData {
         }
 
         int totalCount = result.size();
-        HashSet<String> sectionsToDrop = new HashSet<>();
+        System.out.println("totalCount = " + totalCount);
+//        HashSet<String> sectionsToDrop = new HashSet<>();
         for(String sectionpath:sectionCounts.keySet()){
-            int count = sectionCounts.get(sectionpath);
-            if(totalCount-count< minNegs) sectionsToDrop.add(sectionpath);
+
+            int count = 0;
+            for(String sectionOther:sectionCounts.keySet()){
+                if(sectionOther.startsWith(sectionpath))
+                    count += sectionCounts.get(sectionOther);
+            }
+
+            System.out.println("sectionpath = " + sectionpath+": " + count);
+            if(totalCount-count< minNegs)
+                throw new NotEnoughNegativesException(sectionpath);
+//            if(totalCount-count< minNegs) sectionsToDrop.add(sectionpath);
         }
 
-        List<Instance> filteredResult = new ArrayList<Instance>();
-        for(Instance instance: result) {
-            if(!sectionsToDrop.contains(instance.sectionpath)) filteredResult.add(instance);
-        }
-        return filteredResult;
+//        List<Instance> filteredResult = new ArrayList<Instance>();
+//        for(Instance instance: result) {
+//            if(!sectionsToDrop.contains(instance.sectionpath)) filteredResult.add(instance);
+//        }
+        return result;
     }
 
 
     //--------------------------------
 
-    private static Set<Instance> drawRandomParagraphs(List<Instance> lines, int draws, String notSectionPathPrefix){
-        List<Instance> negatives = new ArrayList<>();
+    private static Set<Instance> drawRandomParagraphs(List<Instance> lines, int draws, String notSectionPathPrefix) throws NotEnoughNegativesException {
+        Set<Instance> negativeHash = new HashSet<>();
+        ArrayList<Instance> negatives = new ArrayList<>();
         for(Instance line:lines) {
-            if (!line.sectionpath.startsWith(notSectionPathPrefix)) negatives.add(line);
+            if (!line.sectionpath.startsWith(notSectionPathPrefix)) {
+                if(!negativeHash.contains(line)) {
+                    negatives.add(line);
+                    negativeHash.add(line);
+                }
+            }
         }
+
+        System.out.println("negatives.size()="+negatives.size());
         Collections.shuffle(negatives);
 
+
+        if(negatives.size()<draws){
+            System.out.println("negatives.size() < draws; negatives.size()="+negatives.size());
+        }
+        System.out.println("Math.min(draws, negatives.size()) = " + Math.min(draws, negatives.size()));
+
         Set<Instance> samples = new HashSet<>();
-        samples.addAll(negatives.subList(0,draws));
+        samples.addAll(negatives.subList(0,Math.min(draws, negatives.size())));
         return samples;
     }
 //
@@ -406,4 +451,15 @@ public class SimpleCarTrainData {
 
     }
 
+    private static class NotEnoughNegativesException extends Throwable {
+        private final String notSectionPathPrefix;
+
+        public NotEnoughNegativesException(String notSectionPathPrefix) {
+            this.notSectionPathPrefix = notSectionPathPrefix;
+        }
+
+        public String getNotSectionPathPrefix() {
+            return notSectionPathPrefix;
+        }
+    }
 }
