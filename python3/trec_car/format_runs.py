@@ -1,5 +1,7 @@
 import csv
 import urllib.parse
+from typing import *
+
 
 
 def encode_section_path(page_id, section_path):
@@ -9,14 +11,14 @@ def encode_page_only(page_id):
     return urllib.parse.urlencode({'page':page_id})
 
 
-class RankingEntry:
+class RankingEntry(object):
     """
     A paragraph within a Wikipedia page.
 
     Attributes:
       paragraph    The content of the Paragraph (which in turn contain a list of ParaBodys)
     """
-    def __init__(self, page_id, section_path, paragraph_id, rank, score, exp_name=None, paragraph_content=None):
+    def __init__(self, page_id:str, section_path:List[str], paragraph_id:str, rank:int, score:float, exp_name:str=None, paragraph_content:str=None):
         assert(rank > 0)
         self.page_id = page_id
         self.section_path = section_path
@@ -27,7 +29,7 @@ class RankingEntry:
         self.paragraph_content = paragraph_content
 
     def to_trec_eval_row(self, alternative_exp_name=None, page_only=False):
-        exp_name_ = alternative_exp_name if alternative_exp_name != None \
+        exp_name_ = alternative_exp_name if alternative_exp_name is not  None \
                     else self.exp_name
         query_ =  encode_section_path(self.page_id, self.section_path) if not page_only else encode_page_only(self.page_id)
 
