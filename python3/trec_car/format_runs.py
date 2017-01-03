@@ -5,10 +5,13 @@ from typing import *
 
 
 def encode_section_path(page_id, section_path):
-    return urllib.parse.urlencode({'page':page_id, 'sectionpath':section_path})
+    elements = [page_id] + section_path
+
+    return '/'.join([urllib.parse.quote(elem) for elem in elements])
+    # return urllib.parse.urlencode({'page':page_id, 'sectionpath':section_path})
 
 def encode_page_only(page_id):
-    return urllib.parse.urlencode({'page':page_id})
+    return urllib.parse.quote(page_id)
 
 
 class RankingEntry(object):

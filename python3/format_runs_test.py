@@ -24,3 +24,4 @@ with open('testfile',mode='w', encoding='UTF-8') as f:
             format_run(writer, ranking, exp_name='test')
 
     f.close()
+
