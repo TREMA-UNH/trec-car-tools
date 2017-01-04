@@ -2,4 +2,4 @@
 
 __version__ = 1.0
 
-__all__ = ['read_data']
+__all__ = ['read_data', 'format_runs']
