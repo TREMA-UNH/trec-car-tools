@@ -159,7 +159,6 @@ ENV/
 .ropeproject
 .gitignore
 .idea/
-README.mkd
 read_data/python/__pycache__/
 release.outline
 release.paragraphs

@@ -1,0 +1,101 @@
+# TREC Car Tools
+
+Development tools for participants of the TREC Complex Answer Retrieval track.
+
+
+Current support for
+- Python 3.5
+- (Soon to come) Java 1.7
+
+## How to use these tools?
+
+Step 1: Get the data from [http://trec-car.cs.unh.edu](http://trec-car.cs.unh.edu)
+Step 2: Clone this repository
+Step 3: Look out for test.py and test.java files as examples for how to access the data.
+
+## Tool support
+
+This package provides support for the following activities.
+
+- read_data:  Reading the provided paragraph collection, outline collections, and training articles
+- format_runs: writing submission files
+
+
+## Reading Data
+
+[CBOR](cbor.io) is similar to JSON, but it is a binary format that compresses better and avoids text file encoding issues.
+
+Articles, outlines, paragraphs are all described with CBOR following this grammar. Wikipedia-internal hyperlinks are preserved through `ParaLink`s.
+
+
+~~~~~
+     Page         -> $pageName [PageSkeleton]
+     PageSkeleton -> Section | Para
+     Section      -> $sectionHeading [PageSkeleton]
+     Para         -> Paragraph
+     Paragraph    -> $paragraphId, [ParaBody]
+     ParaBody     -> ParaText | ParaLink
+     ParaText     -> $text
+     ParaLink     -> $linkDest $anchor
+~~~~~
+
+You can use any CBOR serialization library. Below a convenience library for reading the data into python (2.7)
+
+- `./read_data/trec_car_read_data.py` 
+Python 2.7 convenience library for reading the input data (in CBOR format).
+-- If you use anaconda, please install the cbor library with `conda install -c auto cbor=1.0`
+-- Otherwise install it with `pypi install cbor`
+
+## Ranking Results
+
+Given an outline, your task is to produce one ranking for each section $section (representing an information need in traditional IR evaluations).
+
+Each ranked element is an (entity,passage) pair, meaning that this passage is relevant for the section, because it features a relevant entity. "Relevant" means that the entity or passage must/should/could be listed in this section. 
+
+The section is represented by the path of headings in the outline `$pageTitle/$heading1/$heading1.1/.../$section` in URL encoding.
+
+The entity is represented by the DBpedia entity id (derived from the Wikipedia URL). Optionally, the entity can be omitted.
+
+The passage is represented by the passage id given in the passage corpus (an MD5 hash of the content). Optionally, the passage can be omitted.
+
+
+The results are provided in a format that is similar to the "trec\_results file format" of [trec_eval](http://trec.nist.gov/trec_eval). More info on how to use [trec_eval](http://stackoverflow.com/questions/4275825/how-to-evaluate-a-search-retrieval-engine-using-trec-eval) and [source](https://github.com/usnistgov/trec_eval).
+
+Example of ranking format
+~~~~~
+     Green\_sea\_turtle\Habitat  Pelagic\_zone  12345          0     27409 myTeam 
+     $qid                        $entity        $passageId     rank  sim   run_id 
+~~~~~
+
+
+
+## Integration with other tools
+
+It is recommended to use the format_runs package to write run files. Here an example:
+
+
+        with open('runfile',mode='w', encoding='UTF-8') as f:
+            writer = configure_csv_writer(f)
+            for page in pages:
+                for section_path in page.flat_headings_list():
+                    ranking = [RankingEntry(page.page_name, section_path, p.para_id, r, s, paragraph_content=p) for p,s,r in ranking]
+                    format_run(writer, ranking, exp_name='test')
+
+            f.close()
+
+This ensures that the output is correctly formatted to work with trec_eval and the provided qrels file.
+
+Run [trec_eval](https://github.com/usnistgov/trec_eval/blob/master/README) version 9.0.4 as usual:
+
+      trec_eval -q release.qrel runfile > run.eval
+
+The output is compatible with the eval plotting package [minir-plots](https://github.com/laura-dietz/minir-plots). For example run
+
+      python column.py --out column-plot.pdf --metric map run.eval
+      python column_difficulty.py --out column-difficulty-plot.pdf --metric map run.eval run2.eval
+
+Moreover, you can compute success statistics such as hurts/helps or a paired-t-test as follows.
+
+      python hurtshelps.py --metric map run.eval run2.eval
+      python paired-ttest.py --metric map run.eval run2.eval
+
