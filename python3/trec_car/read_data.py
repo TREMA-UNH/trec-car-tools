@@ -38,19 +38,21 @@ class Page(object):
       page_name    The name of the page (str)
       skeleton     Its structure (a list of PageSkeletons)
     """
-    def __init__(self, page_name, skeleton):
+    def __init__(self, page_name, page_id, skeleton):
         self.page_name = page_name
+        self.page_id = page_id
         self.skeleton = list(skeleton)
+        self.child_sections = [child for child in self.skeleton if isinstance(child, Section)]
 
 
     def deep_headings_list(self):
-        return [child.nested_headings() for child in self.skeleton if isinstance(child, Section) ]
+        return [child.nested_headings() for child in self.child_sections]
 
     def flat_headings_list(self):
 
         def flatten(prefix, headings):
-            for heading, children in headings:
-                new_prefix = prefix + [heading]
+            for section, children in headings:
+                new_prefix = prefix + [section]
                 if len(children)>0 :
                     yield from flatten(new_prefix, children)
                 else:
@@ -64,8 +66,11 @@ class Page(object):
     @staticmethod
     def from_cbor(cbor):
         assert cbor[0] == 0 # tag
-        assert cbor[1][0] == 0 # PageName tag
-        return Page(cbor[1][1], map(PageSkeleton.from_cbor, cbor[2]))
+        # assert cbor[1][0] == 0 # PageName tag
+        pagename = cbor[1]
+        # assert cbor[2][0] == 0 # PageId tag
+        pageId = cbor[2].decode('ascii')
+        return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]))
 
     def __str__(self):
         return "Page(%s)" % self.page_name
@@ -75,10 +80,11 @@ class Page(object):
 
     def nested_headings(self):
         '''Each heading recursively represented by a pair of (heading, list_of_children) '''
-        return [child.nested_headings() for child in self.skeleton]
+        result = [child.nested_headings() for child in self.child_sections]
+        return result
 
     def outline(self):
-        return [heading for heading in self.skeleton if isinstance(heading,Section)]
+        return self.child_sections
 
 class PageSkeleton(object):
     """ A minimal representation of the structure of a Wikipedia page. """
@@ -86,7 +92,9 @@ class PageSkeleton(object):
     def from_cbor(cbor):
         tag = cbor[0]
         if tag == 0:
-            return Section(cbor[1][1], map(PageSkeleton.from_cbor, cbor[2]))
+            heading = cbor[1]
+            headingId = cbor[2].decode('ascii')
+            return Section(heading, headingId, map(PageSkeleton.from_cbor, cbor[3]))
         elif tag == 1:
             return Para(Paragraph.from_cbor(cbor[1]))
         else:
@@ -99,26 +107,25 @@ class Section(PageSkeleton):
     A section of a Wikipedia page.
 
     Attributes:
-      title       The title of a page (str)
+      title       The heading of a section (str)
       children    The PageSkeleton elements contained by the section
     """
-    def __init__(self, title, children):
-        self.title = title
+    def __init__(self, heading, headingId, children):
+        self.heading = heading
+        self.headingId = headingId
         self.children = list(children)
-
-    def child_sections(self):
-        return [child for child in self.children if isinstance(child, Section)]
+        self.child_sections =  [child for child in self.children if isinstance(child, Section)]
 
     def __str__(self, level=1):
         bar = "".join("="*level)
         children = "".join(c.__str__(level=level+1) for c in self.children)
-        return "%s %s %s\n\n%s" % (bar, self.title, bar, children)
+        return "%s %s %s\n\n%s" % (bar, self.heading, bar, children)
 
     def __getitem__(self, idx):
         return self.children[idx]
 
     def nested_headings(self):
-        return (self.title, [child.nested_headings() for child in self.child_sections()])
+        return (self, [child.nested_headings() for child in self.child_sections])
 
 class Para(PageSkeleton):
     """
@@ -144,8 +151,8 @@ class Paragraph(object):
     @staticmethod
     def from_cbor(cbor):
         assert cbor[0] == 0
-        assert cbor[1][0] == 0
-        return Paragraph(cbor[1][1].decode('ascii'), map(ParaBody.from_cbor, cbor[2]))
+        paragraphId = cbor[1].decode('ascii')
+        return Paragraph(paragraphId, map(ParaBody.from_cbor, cbor[2]))
 
     def __str__(self, level=None):
         return ''.join(str(body) for body in self.bodies)
@@ -160,7 +167,7 @@ class ParaBody(object):
         if tag == 0:
             return ParaText(cbor[1])
         elif tag == 1:
-            return ParaLink(cbor[1][1], cbor[2])
+            return ParaLink(cbor[1], cbor[2])
         else:
             assert(False)
 
