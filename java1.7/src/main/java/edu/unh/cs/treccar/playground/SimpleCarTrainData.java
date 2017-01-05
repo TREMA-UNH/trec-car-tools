@@ -6,6 +6,8 @@ import edu.unh.cs.treccar.Data;
 import edu.unh.cs.treccar.read_data.DeserializeData;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -72,6 +74,7 @@ public class SimpleCarTrainData {
             result.add(query.getQueryId());
             result.add(query.getPagename());
             result.add(query.getSectionPath());
+            result.add(paragraphId);
             result.add(paragraphContent);
 
             result.add(judgment.toString());  // any preference on the judgment coding?
@@ -127,6 +130,7 @@ public class SimpleCarTrainData {
             result.add(query.queryId);
             result.add(query.pagename);
             result.add(query.sectionpath);
+            result.add(paragraphId);
             result.add(paragraphContent);
             return result;
         }
@@ -286,20 +290,12 @@ public class SimpleCarTrainData {
         private final String sectionpath;
         private String queryId;
 
-        public Query(String pagename, List<String> sectionpathlist) {
+        public Query(String pagename, List<String> sectionpathlist, String queryId) {
 
             this.pagename = pagename;
             this.sectionpathlist = sectionpathlist;
             this.sectionpath = StringUtils.join(sectionpathlist," ");
-
-            Map<Object, Object> params = new HashMap<>();
-            params.put("page", pagename);
-            params.put("sectionpath", sectionpathlist);
-            try {
-                this.queryId = urlEncode("", params);
-            } catch (UnsupportedEncodingException ex) {
-                throw new RuntimeException(ex);
-            }
+            this.queryId = queryId;
         }
 
         public String getSectionPath() {
@@ -332,43 +328,14 @@ public class SimpleCarTrainData {
         public int hashCode() {
             return getQueryId() != null ? getQueryId().hashCode() : 0;
         }
-
-        private String urlEncode(String url, final Map<Object, Object> parameters) throws UnsupportedEncodingException {
-            if (parameters == null || parameters.isEmpty()) {
-                return url;
-            }
-
-            if(!url.isEmpty() && !url.endsWith("?")){
-                url += "?";
-            }
-
-
-            boolean first = true;
-
-            for (Map.Entry<Object, Object> parameter : parameters.entrySet()) {
-
-                final String encodedKey = URLEncoder.encode(parameter.getKey().toString(), "UTF-8");
-                final String encodedValue = URLEncoder.encode(parameter.getValue().toString(), "UTF-8");
-
-
-                if (first) {
-                    url += encodedKey + "=" + encodedValue;
-                    first = false;
-                } else {
-                    url += "&" + encodedKey + "=" + encodedValue;
-                }
-            }
-
-            return url;
-        }
-
     }
+
     public Map<String, Query> extractQueries(final FileInputStream fileInputStream) throws CborException, IOException {
         Map<String,Query> queryMap = new HashMap<>();
 
         for(Data.Page page: DeserializeData.iterableAnnotations((fileInputStream))){
-            for (List<String> sectionPath : page.flatSectionPaths()) {
-                Query q = new Query(page.getPageName(), sectionPath);
+            for (List<Data.Section> sectionPath : page.flatSectionPaths()) {
+                Query q = new Query(page.getPageName(), Data.sectionPathHeadings(sectionPath), Data.sectionPathId(page.getPageId(), sectionPath));
                 queryMap.put(q.getQueryId(), q);
             }
         }
@@ -402,13 +369,13 @@ public class SimpleCarTrainData {
         List<Instance> result = new ArrayList<Instance>();
 
         for(Data.Page.SectionPathParagraphs sectpara:page.flatSectionPathsParagraphs()) {
-            final List<String> sectionpathList = sectpara.getSectionPath();
+            final List<Data.Section> sectionpathList = sectpara.getSectionPath();
 
             boolean isExcludeItem = false;
 
             if(sectpara.getSectionPath().isEmpty()) isExcludeItem = true; // skip lead paragraph
-            for(String heading: sectpara.getSectionPath()) {
-                if (forbiddenHeadings.contains(heading.toLowerCase())) isExcludeItem = true;
+            for(Data.Section section: sectpara.getSectionPath()) {
+                if (forbiddenHeadings.contains(section.getHeading().toLowerCase())) isExcludeItem = true;
             }
 
             final String paraId = sectpara.getParagraph().getParaId();
@@ -417,7 +384,12 @@ public class SimpleCarTrainData {
             if(paratext.length()<10) isExcludeItem = true;
 
             if(!isExcludeItem) {
-                Instance line = new Instance(new Query(page.getPageName(), sectionpathList), paraId, paratext);
+                Instance line = new Instance(
+                        new Query(page.getPageName(),
+                        Data.sectionPathHeadings(sectionpathList),
+                        Data.sectionPathId(page.getPageId(), sectionpathList)
+                        )
+                        , paraId, paratext);
                 result.add(line);
             }
         }

@@ -1,5 +1,7 @@
 package edu.unh.cs.treccar;
 
+import com.sun.deploy.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +12,22 @@ import java.util.List;
  * Time: 11:55 AM
  */
 public class Data {
+    public static String sectionPathId(String pageId, List<Section> sections){
+        List<String> result = new ArrayList<>();
+        result.add(pageId);
+        for(Section section:sections){
+            result.add(section.headingId);
+        }
+        return StringUtils.join(result, "/");
+    }
 
+    public static List<String> sectionPathHeadings(List<Section> sections){
+        List<String> result = new ArrayList<>();
+        for(Section section:sections){
+            result.add(section.heading);
+        }
+        return result;
+    }
 
     public static interface PageSkeleton {
     }
@@ -18,11 +35,13 @@ public class Data {
 
     public final static class Page {
         private final String pageName;
+        private final String pageId;
         private final List<PageSkeleton> skeleton;
         private final ArrayList<Section> childSections;
 
-        public Page(String pageName, List<PageSkeleton> skeleton) {
+        public Page(String pageName, String pageId, List<PageSkeleton> skeleton) {
             this.pageName = pageName;
+            this.pageId = pageId;
             this.skeleton = skeleton;
             this.childSections = new ArrayList<Section>();
             for(PageSkeleton skel : skeleton) {
@@ -35,6 +54,10 @@ public class Data {
             return pageName;
         }
 
+        public String getPageId() {
+            return pageId;
+        }
+
         public List<PageSkeleton> getSkeleton() {
             return skeleton;
         }
@@ -43,13 +66,13 @@ public class Data {
             return childSections;
         }
 
-        private static List<List<String>> flatSectionPaths_(List<String> prefix, List<Section> headings) {
-            List<List<String>> result = new ArrayList<>();
+        private static List<List<Section>> flatSectionPaths_(List<Section> prefix, List<Section> headings) {
+            List<List<Section>> result = new ArrayList<>();
 
             for(Section heading : headings){
-                final List<String> newPrefix = new ArrayList<String>();
+                final List<Section> newPrefix = new ArrayList<>();
                 newPrefix.addAll(prefix);
-                newPrefix.add(heading.getTitle());
+                newPrefix.add(heading);
 
                 if(heading.getChildSections().isEmpty()) {
                     result.add(newPrefix);
@@ -62,21 +85,21 @@ public class Data {
 
         }
 
-        public List<List<String>> flatSectionPaths() {
-            return flatSectionPaths_(Collections.<String>emptyList(), childSections);
+        public List<List<Section>> flatSectionPaths() {
+            return flatSectionPaths_(Collections.<Section>emptyList(), childSections);
         }
 
 
         static public class SectionPathParagraphs{
-            private final List<String> sectionPath;
+            private final List<Section> sectionPath;
             private final Paragraph paragraph;
 
-            public SectionPathParagraphs(List<String> sectionPath, Paragraph paragraph) {
+            public SectionPathParagraphs(List<Section> sectionPath, Paragraph paragraph) {
                 this.sectionPath = sectionPath;
                 this.paragraph = paragraph;
             }
 
-            public List<String> getSectionPath() {
+            public List<Section> getSectionPath() {
                 return sectionPath;
             }
 
@@ -111,16 +134,16 @@ public class Data {
                         '}';
             }
         }
-        private static List<SectionPathParagraphs> flatSectionPathsParagraphs_(List<String> prefix, List<PageSkeleton> skeletonList) {
+        private static List<SectionPathParagraphs> flatSectionPathsParagraphs_(List<Section> prefix, List<PageSkeleton> skeletonList) {
             List<SectionPathParagraphs> result = new ArrayList<>();
 
             for(PageSkeleton skel : skeletonList){
                 if(skel instanceof Section) {
                     Section section = (Section) skel;
 
-                    final List<String> newPrefix = new ArrayList<String>();
+                    final List<Section> newPrefix = new ArrayList<>();
                     newPrefix.addAll(prefix);
-                    newPrefix.add(section.getTitle());
+                    newPrefix.add(section);
 
                     if (section.getChildren().isEmpty()) {
 
@@ -140,7 +163,7 @@ public class Data {
 
 
         public List<SectionPathParagraphs> flatSectionPathsParagraphs() {
-            return flatSectionPathsParagraphs_(Collections.<String>emptyList(), getSkeleton());
+            return flatSectionPathsParagraphs_(Collections.<Section>emptyList(), getSkeleton());
         }
 
 
@@ -157,12 +180,14 @@ public class Data {
     }
 
     public final static class Section implements PageSkeleton{
-        private final String title;
+        private final String heading;
+        private final String headingId;
         private final List<PageSkeleton> children;
         private final List<Section> childSections;
 
-        public Section(String title, List<PageSkeleton> children) {
-            this.title = title;
+        public Section(String heading, String headingId,  List<PageSkeleton> children) {
+            this.heading = heading;
+            this.headingId = headingId;
             this.children = children;
             this.childSections = new ArrayList<Section>();
             for(PageSkeleton skel : children) {
@@ -171,8 +196,12 @@ public class Data {
 
         }
 
-        public String getTitle() {
-            return title;
+        public String getHeading() {
+            return heading;
+        }
+
+        public String getHeadingId() {
+            return headingId;
         }
 
         public List<PageSkeleton> getChildren() {
@@ -181,12 +210,33 @@ public class Data {
 
         public List<Section> getChildSections() { return childSections; }
 
+
         @Override
         public String toString() {
             return "Section{" +
-                    "title='" + title + '\'' +
+                    "heading='" + heading + '\'' +
+                    ", headingId='" + headingId + '\'' +
                     ", children=" + children +
                     '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Section)) return false;
+
+            Section section = (Section) o;
+
+            if (getHeadingId() != null ? !getHeadingId().equals(section.getHeadingId()) : section.getHeadingId() != null)
+                return false;
+            return getChildSections() != null ? getChildSections().equals(section.getChildSections()) : section.getChildSections() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getHeadingId() != null ? getHeadingId().hashCode() : 0;
+            result = 31 * result + (getChildSections() != null ? getChildSections().hashCode() : 0);
+            return result;
         }
     }
 

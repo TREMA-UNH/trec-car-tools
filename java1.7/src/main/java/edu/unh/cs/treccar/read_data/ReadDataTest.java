@@ -4,6 +4,7 @@ import edu.unh.cs.treccar.Data;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,40 +15,50 @@ import java.util.List;
 public class ReadDataTest {
 
     public static void main(String[] args) throws Exception{
-        final FileInputStream fileInputStream3 = new FileInputStream(new File("release.articles"));
+        final FileInputStream fileInputStream3 = new FileInputStream(new File("hi.cbor"));
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream3)) {
-            for (List<String> line : page.flatSectionPaths()){
-                System.out.println(line);
+            for (List<Data.Section> sectionPath : page.flatSectionPaths()){
+                System.out.println(Data.sectionPathId(page.getPageId(), sectionPath)+"   \t "+Data.sectionPathHeadings(sectionPath));
             }
             System.out.println();
         }
 
         System.out.println("\n\n");
-
-        final FileInputStream fileInputStream4 = new FileInputStream(new File("release.articles"));
-        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream4)) {
-            for (Data.Page.SectionPathParagraphs line : page.flatSectionPathsParagraphs()){
-                System.out.println(line.getSectionPath()+"\t"+line.getParagraph().getTextOnly());
-            }
-            System.out.println();
-        }
-
-
-        System.out.println("\n\n");
-        final FileInputStream fileInputStream = new FileInputStream(new File("release.outline"));
-        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
-            System.out.println(page);
-            System.out.println();
-        }
-
-
-        System.out.println("\n\n");
-
-       final FileInputStream fileInputStream2 = new FileInputStream(new File("release.paragraphs"));
-        for(Data.Paragraph p: DeserializeData.iterableParagraphs(fileInputStream2)) {
-            System.out.println(p);
-            System.out.println();
-        }
+//
+//        final FileInputStream fileInputStream3 = new FileInputStream(new File("release.articles"));
+//        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream3)) {
+//            for (List<String> line : page.flatSectionPaths()){
+//                System.out.println(line);
+//            }
+//            System.out.println();
+//        }
+//
+//        System.out.println("\n\n");
+//
+//        final FileInputStream fileInputStream4 = new FileInputStream(new File("release.articles"));
+//        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream4)) {
+//            for (Data.Page.SectionPathParagraphs line : page.flatSectionPathsParagraphs()){
+//                System.out.println(line.getSectionPath()+"\t"+line.getParagraph().getTextOnly());
+//            }
+//            System.out.println();
+//        }
+//
+//
+//        System.out.println("\n\n");
+//        final FileInputStream fileInputStream = new FileInputStream(new File("release.outline"));
+//        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
+//            System.out.println(page);
+//            System.out.println();
+//        }
+//
+//
+//        System.out.println("\n\n");
+//
+//       final FileInputStream fileInputStream2 = new FileInputStream(new File("release.paragraphs"));
+//        for(Data.Paragraph p: DeserializeData.iterableParagraphs(fileInputStream2)) {
+//            System.out.println(p);
+//            System.out.println();
+//        }
 
 
     }

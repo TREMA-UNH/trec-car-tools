@@ -21,7 +21,7 @@ public class ExtractPlainText {
 
         if(skel instanceof Data.Section){
             final Data.Section section = (Data.Section) skel;
-            String query2 = section.getTitle();
+            String query2 = section.getHeading();
 
             List<String> result = new ArrayList<>();
             for(Data.PageSkeleton child : section.getChildren()) {

@@ -135,15 +135,11 @@ public class DeserializeData {
 
         assert(array.get(0).getTag().getValue() == 0L);
 
-        List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
-        assert(array2.get(0).getTag().getValue() == 0L);
+        UnicodeString pageName = (UnicodeString) array.get(1);
+        ByteString pageId = (ByteString) array.get(2);
+        DataItem skeletons = array.get(3);
 
-//            ByteString heading = (ByteString) array2.getDataItems().get(1);
-//            new String(heading.getBytes())
-        UnicodeString heading = (UnicodeString) array2.get(1);
-        DataItem skeletons = array.get(2);
-
-        return new Data.Page(heading.getString(), pageSkeletonsFromCbor(skeletons));
+        return new Data.Page(pageName.getString(), new String(pageId.getBytes()), pageSkeletonsFromCbor(skeletons));
     }
 
     private static Data.Para paraFromCbor(DataItem dataItem){
@@ -154,12 +150,12 @@ public class DeserializeData {
         List<DataItem> array = ((Array) dataItem).getDataItems();
         assert(array.get(0).getTag().getValue() == 0L);
 
-        List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
-        assert(((UnsignedInteger) array2.get(0)).getValue().intValue() == 0);
-        ByteString paraid = ((ByteString) array2.get(1));
+//        List<DataItem> array2 = ((Array) array.get(1)).getDataItems();
+//        assert(((UnsignedInteger) array2.get(0)).getValue().intValue() == 0);
+        ByteString paraid = (ByteString) array.get(1);
 
 //            List<DataItem> bodiesItem = ((Array) array.get(2)).getDataItems();
-        DataItem bodiesItem = ((Array) array.get(2));
+        DataItem bodiesItem = (Array) array.get(2);
 
         return new Data.Paragraph( new String(paraid.getBytes()), paraBodiesFromCbor(bodiesItem));
     }
@@ -170,8 +166,9 @@ public class DeserializeData {
 
         switch( ((UnsignedInteger) array.get(0)).getValue().intValue()) {
             case 0: {
-                UnicodeString heading = (UnicodeString) ((Array) array.get(1)).getDataItems().get(1);
-                return new Data.Section(heading.getString(), pageSkeletonsFromCbor(array.get(2)));
+                UnicodeString heading = (UnicodeString) array.get(1);
+                ByteString headingId = (ByteString) array.get(2);
+                return new Data.Section(heading.getString(), new String(headingId.getBytes()), pageSkeletonsFromCbor(array.get(3)));
             }
             case 1: return paraFromCbor((array.get(1)));
             default: throw new RuntimeException("pageSkeletonFromCbor found an unhandled case: "+array.toString());
@@ -211,7 +208,7 @@ public class DeserializeData {
                 return new Data.ParaText(text.getString());
             }
             case 1: {
-                UnicodeString heading = (UnicodeString) ((Array) array.get(1)).getDataItems().get(1);
+                UnicodeString heading = (UnicodeString) array.get(1);
                 UnicodeString second = (UnicodeString) array.get(2);
                 return new Data.ParaLink(heading.getString(), second.getString());
             }
