@@ -138,13 +138,22 @@ public class LinksWithContextKeywords {
             LinksWithContextKeywords extract = new LinksWithContextKeywords();
             final FileInputStream fileInputStream = new FileInputStream(new File(cborArticleInputFile));
 
-            List<LinkInstance> trainData = extract.extractLinkData(fileInputStream, keywords, addParagraph, filterByKeyword);
+//            List<LinkInstance> trainData = extract.extractLinkData(fileInputStream, keywords, addParagraph, filterByKeyword);
+
+
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(linkOutputFile)));
-            for(LinkInstance line: trainData){
-                System.out.println(line.toTsvSeqments());
-                writer.write(line.toTsvLine());
-                writer.newLine();
+            for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
+
+                List<LinkInstance> result = extract.getInstances(page, keywords, addParagraph, filterByKeyword);
+                for(LinkInstance line: result){
+//                System.out.println(line.toTsvSeqments());
+                    writer.write(line.toTsvLine());
+                    writer.newLine();
+
+                }
             }
+
+            fileInputStream.close();
             writer.close();
 
         }
