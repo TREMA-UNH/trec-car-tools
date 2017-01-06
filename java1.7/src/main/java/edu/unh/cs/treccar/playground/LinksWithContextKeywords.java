@@ -72,12 +72,12 @@ public class LinksWithContextKeywords {
     }
 
 
-    private List<LinkInstance> extractLinkData(FileInputStream fileInputStream, String keyword, boolean addParagraph, boolean filterByKeyword) throws IOException, CborException {
+    private List<LinkInstance> extractLinkData(FileInputStream fileInputStream, List<String> keywords, boolean addParagraph, boolean filterByKeyword) throws IOException, CborException {
         List<LinkInstance> megaresult = new ArrayList<LinkInstance>();
 
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
 
-            List<LinkInstance> result = getInstances(page, keyword, addParagraph, filterByKeyword);
+            List<LinkInstance> result = getInstances(page, keywords, addParagraph, filterByKeyword);
             megaresult.addAll(result);
         }
 
@@ -87,18 +87,22 @@ public class LinksWithContextKeywords {
 
     }
 
-    private static boolean paragraphTextContainsKeyword(Data.Paragraph para, String keyword){
-        return para.getTextOnly().toLowerCase().contains(keyword);
+    private static boolean paragraphTextContainsKeyword(Data.Paragraph para, List<String> keywords){
+        final String normtext = para.getTextOnly().toLowerCase();
+        for(String keyword: keywords) {
+            if (normtext.contains(keyword)) return true;
+        }
+        return false;
     }
 
-    private List<LinkInstance> getInstances(Data.Page page, String keyword, boolean addParagraph, boolean filterByKeyword) {
+    private List<LinkInstance> getInstances(Data.Page page, List<String> keywords, boolean addParagraph, boolean filterByKeyword) {
         List<LinkInstance> result = new ArrayList<>();
         for(Data.Page.SectionPathParagraphs sectparas : page.flatSectionPathsParagraphs()){
-            if(!filterByKeyword || paragraphTextContainsKeyword(sectparas.getParagraph(), keyword)){
+            if(!filterByKeyword || paragraphTextContainsKeyword(sectparas.getParagraph(), keywords)){
                 for(String toPage :sectparas.getParagraph().getEntitiesOnly()){
                     String text = "";
                     if(addParagraph) text = sectparas.getParagraph().getTextOnly();
-                    final String sectPath = StringUtils.join(sectparas.getSectionPath(), " ");
+                    final String sectPath = StringUtils.join(Data.sectionPathHeadings(sectparas.getSectionPath()), " ");
                     result.add(new LinkInstance(page.getPageName(), sectPath, toPage, text));
                 }
             }
@@ -108,8 +112,12 @@ public class LinksWithContextKeywords {
 
     public static void main(String[] args) throws IOException, CborException {
         final String cborArticleInputFile = args[0];
-        final String keyword = args[1];
-        final String linkOutputFile = args[2];
+        final String linkOutputFile = args[1];
+        List<String> keywords = new ArrayList<>();
+        for (int i = 2, argsLength = args.length; i < argsLength; i++) {
+            String arg = args[i];
+            keywords.add(arg.trim().toLowerCase());
+        }
 
 //        final String testOutputFile = args[2];
 //        final String clusterOutputFile = args[3];
@@ -120,7 +128,7 @@ public class LinksWithContextKeywords {
 
 
         if(filterByKeyword) {
-            System.out.println("extract links with keyword "+keyword+" from file "+cborArticleInputFile);
+            System.out.println("extract links with keyword "+keywords+" from file "+cborArticleInputFile);
         } else {
             System.out.println("extract all links from "+cborArticleInputFile);
         }
@@ -129,7 +137,7 @@ public class LinksWithContextKeywords {
             LinksWithContextKeywords extract = new LinksWithContextKeywords();
             final FileInputStream fileInputStream = new FileInputStream(new File(cborArticleInputFile));
 
-            List<LinkInstance> trainData = extract.extractLinkData(fileInputStream, keyword, addParagraph, filterByKeyword);
+            List<LinkInstance> trainData = extract.extractLinkData(fileInputStream, keywords, addParagraph, filterByKeyword);
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(linkOutputFile)));
             for(LinkInstance line: trainData){
                 System.out.println(line.toTsvSeqments());
