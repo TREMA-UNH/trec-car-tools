@@ -1,7 +1,6 @@
 package edu.unh.cs.treccar;
 
-import com.sun.deploy.util.StringUtils;
-
+import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
