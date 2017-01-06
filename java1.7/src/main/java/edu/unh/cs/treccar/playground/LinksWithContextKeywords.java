@@ -124,7 +124,7 @@ public class LinksWithContextKeywords {
 //        final String clusterOutputFile = args[3];
 
         boolean addParagraph = false;
-        boolean filterByKeyword= false;
+        boolean filterByKeyword= true;
 
 
 
