@@ -111,6 +111,7 @@ public class LinksWithContextKeywords {
     }
 
     public static void main(String[] args) throws IOException, CborException {
+        System.setProperty("file.encoding", "UTF-8");
         final String cborArticleInputFile = args[0];
         final String linkOutputFile = args[1];
         List<String> keywords = new ArrayList<>();

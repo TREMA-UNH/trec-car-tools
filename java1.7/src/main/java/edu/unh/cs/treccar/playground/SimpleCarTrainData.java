@@ -475,6 +475,7 @@ public class SimpleCarTrainData {
 
 
     public static void main(String[] args) throws IOException, CborException {
+        System.setProperty("file.encoding", "UTF-8");
         final String cborArticleInputFile = args[0];
         final String trainingOutputFile = args[1];
         final String testOutputFile = args[2];

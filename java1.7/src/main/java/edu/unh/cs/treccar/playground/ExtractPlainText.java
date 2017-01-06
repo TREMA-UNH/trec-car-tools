@@ -47,6 +47,7 @@ public class ExtractPlainText {
 
 
     public static void main(String[] args) throws FileNotFoundException, CborException {
+        System.setProperty("file.encoding", "UTF-8");
         final FileInputStream fileInputStream = new FileInputStream(new File(args[0]));
 
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
