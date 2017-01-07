@@ -21,10 +21,9 @@ class RankingEntry(object):
     Attributes:
       paragraph    The content of the Paragraph (which in turn contain a list of ParaBodys)
     """
-    def __init__(self, page_id:str, section_path:List[str], paragraph_id:str, rank:int, score:float, exp_name:str=None, paragraph_content:str=None):
+    def __init__(self, query_id:str, paragraph_id:str, rank:int, score:float, exp_name:str=None, paragraph_content:str=None):
         assert(rank > 0)
-        self.page_id = page_id
-        self.section_path = section_path
+        self.query_id = query_id
         self.paragraph_id = paragraph_id
         self.rank = rank
         self.score = score
@@ -34,9 +33,7 @@ class RankingEntry(object):
     def to_trec_eval_row(self, alternative_exp_name=None, page_only=False):
         exp_name_ = alternative_exp_name if alternative_exp_name is not  None \
                     else self.exp_name
-        query_ =  encode_section_path(self.page_id, self.section_path) if not page_only else encode_page_only(self.page_id)
-
-        return [query_, 'Q0', self.paragraph_id, self.rank, self.score, exp_name_]
+        return [self.query_id, 'Q0', self.paragraph_id, self.rank, self.score, exp_name_]
 
 
 csv.register_dialect(
@@ -54,8 +51,9 @@ def configure_csv_writer(fileobj):
     return csv.writer(fileobj, dialect='trec_eval')
 
 
-def format_run(csv_writer, ranking_of_paragraphs, exp_name=None):
+def format_run(writer, ranking_of_paragraphs, exp_name=None):
     'write one ranking to the csv writer'
     for elem in ranking_of_paragraphs:
         # query-number    Q0  document-id rank    score   Exp
-        csv_writer.writerow(elem.to_trec_eval_row(exp_name))
+        writer.write(" ".join([str(x) for x in elem.to_trec_eval_row(exp_name)]))
+        writer.write("\n")

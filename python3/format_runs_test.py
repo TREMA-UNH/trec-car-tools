@@ -20,7 +20,8 @@ with open('testfile',mode='w', encoding='UTF-8') as f:
     writer = configure_csv_writer(f)
     for page in pages:
         for section_path in page.flat_headings_list():
-            ranking = [RankingEntry(page.page_name, section_path, p.para_id, r, s, paragraph_content=p) for p,s,r in mock_ranking]
+            query_id = "/".join([page.page_id]+[section.headingId for section in section_path])
+            ranking = [RankingEntry(query_id, p.para_id, r, s, paragraph_content=p) for p, s, r in mock_ranking]
             format_run(writer, ranking, exp_name='test')
 
     f.close()
