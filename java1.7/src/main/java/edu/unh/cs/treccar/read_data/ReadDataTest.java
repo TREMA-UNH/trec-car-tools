@@ -15,7 +15,7 @@ import java.util.List;
 public class ReadDataTest {
 
     public static void main(String[] args) throws Exception{
-        final FileInputStream fileInputStream3 = new FileInputStream(new File("hi.cbor"));
+        final FileInputStream fileInputStream3 = new FileInputStream(new File("all-chocolate-train-filter.cbor"));
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream3)) {
             for (List<Data.Section> sectionPath : page.flatSectionPaths()){
                 System.out.println(Data.sectionPathId(page.getPageId(), sectionPath)+"   \t "+Data.sectionPathHeadings(sectionPath));

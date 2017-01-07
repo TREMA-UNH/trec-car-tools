@@ -4,6 +4,7 @@ import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -57,22 +58,40 @@ public class DeserializeData {
 
     }
 
-    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborException {
+
+    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws RuntimeCborException {
         return new Iterable<Data.Page>() {
             @Override
             public Iterator<Data.Page> iterator() {
-                try {
+                try{
                     return iterAnnotations(inputStream);
                 } catch (CborException e) {
-                    e.printStackTrace();
-                    return null;
+                    throw new RuntimeCborException(e);
                 }
             }
         };
     }
 
 
+    /**
+     * @return null if no valid object can be located at the byte offset
+     */
+    private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws CborException, IOException {
+        try{
+            inputStream.skip(offset);
+            return iterAnnotations(inputStream).next();
+        } catch (CborException e) {
+            throw new RuntimeCborException(e);
+        }
 
+    }
+
+
+    public static class RuntimeCborException extends RuntimeException {
+        public RuntimeCborException(CborException cause) {
+            super(cause);
+        }
+    }
 
 
     public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborException {
