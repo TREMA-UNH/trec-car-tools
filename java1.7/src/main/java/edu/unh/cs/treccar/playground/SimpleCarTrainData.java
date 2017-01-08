@@ -40,11 +40,11 @@ public class SimpleCarTrainData {
     public SimpleCarTrainData() {
         forbiddenHeadings = new HashSet<>();
         forbiddenHeadings.add("see also");
-        forbiddenHeadings.add("external links");
         forbiddenHeadings.add("references");
         forbiddenHeadings.add("external links");
         forbiddenHeadings.add("notes");
         forbiddenHeadings.add("bibliography");
+        forbiddenHeadings.add("gallery");
         forbiddenHeadings.add("further reading");
     }
 

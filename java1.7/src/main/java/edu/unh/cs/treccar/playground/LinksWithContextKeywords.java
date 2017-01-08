@@ -72,20 +72,20 @@ public class LinksWithContextKeywords {
     }
 
 
-    private List<LinkInstance> extractLinkData(FileInputStream fileInputStream, List<String> keywords, boolean addParagraph, boolean filterByKeyword) throws IOException, CborException {
-        List<LinkInstance> megaresult = new ArrayList<LinkInstance>();
-
-        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
-
-            List<LinkInstance> result = getInstances(page, keywords, addParagraph, filterByKeyword);
-            megaresult.addAll(result);
-        }
-
-        fileInputStream.close();
-
-        return megaresult;
-
-    }
+//    private List<LinkInstance> extractLinkData(FileInputStream fileInputStream, List<String> keywords, boolean addParagraph, boolean filterByKeyword) throws IOException, CborException {
+//        List<LinkInstance> megaresult = new ArrayList<LinkInstance>();
+//
+//        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
+//
+//            List<LinkInstance> result = getInstances(page, keywords, addParagraph, filterByKeyword);
+//            megaresult.addAll(result);
+//        }
+//
+//        fileInputStream.close();
+//
+//        return megaresult;
+//
+//    }
 
     private static boolean paragraphTextContainsKeyword(Data.Paragraph para, List<String> keywords){
         final String normtext = para.getTextOnly().toLowerCase();
