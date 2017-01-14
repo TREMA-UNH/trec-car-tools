@@ -35,21 +35,21 @@ class RankingEntry(object):
                     else self.exp_name
         return [self.query_id, 'Q0', self.paragraph_id, self.rank, self.score, exp_name_]
 
-
-csv.register_dialect(
-    'trec_eval',
-    delimiter = ' ',
-    quotechar = '"',
-    doublequote = False,
-    skipinitialspace = False,
-    lineterminator = '\n',
-    quoting = csv.QUOTE_NONE)
-
-
-def configure_csv_writer(fileobj):
-    'Convenience method to create a csv writer with the trec_eval_dialect'
-    return csv.writer(fileobj, dialect='trec_eval')
-
+#
+# csv.register_dialect(
+#     'trec_eval',
+#     delimiter = ' ',
+#     quotechar = '"',
+#     doublequote = False,
+#     skipinitialspace = False,
+#     lineterminator = '\n',
+#     quoting = csv.QUOTE_NONE)
+#
+#
+# def configure_csv_writer(fileobj):
+#     'Convenience method to create a csv writer with the trec_eval_dialect'
+#     return csv.writer(fileobj, dialect='trec_eval')
+#
 
 def format_run(writer, ranking_of_paragraphs, exp_name=None):
     'write one ranking to the csv writer'
