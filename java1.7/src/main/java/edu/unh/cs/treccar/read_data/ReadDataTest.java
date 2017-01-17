@@ -14,8 +14,20 @@ import java.util.List;
  */
 public class ReadDataTest {
 
+
     public static void main(String[] args) throws Exception{
-        final FileInputStream fileInputStream3 = new FileInputStream(new File("all-chocolate-train-filter.cbor"));
+        System.setProperty("file.encoding", "UTF-8");
+
+        if (args.length<3) {
+            System.out.println("Command line parameters: articlefile outlinefile paragraphfile");
+            System.exit(-1);
+        }
+
+        String articles = args[0];
+        String outlines = args[1];
+        String paragraphs = args[2];
+
+        final FileInputStream fileInputStream3 = new FileInputStream(new File(articles));
         for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream3)) {
             for (List<Data.Section> sectionPath : page.flatSectionPaths()){
                 System.out.println(Data.sectionPathId(page.getPageId(), sectionPath)+"   \t "+Data.sectionPathHeadings(sectionPath));
@@ -42,23 +54,23 @@ public class ReadDataTest {
 //            }
 //            System.out.println();
 //        }
-//
-//
-//        System.out.println("\n\n");
-//        final FileInputStream fileInputStream = new FileInputStream(new File("release.outline"));
-//        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
-//            System.out.println(page);
-//            System.out.println();
-//        }
-//
-//
-//        System.out.println("\n\n");
-//
-//       final FileInputStream fileInputStream2 = new FileInputStream(new File("release.paragraphs"));
-//        for(Data.Paragraph p: DeserializeData.iterableParagraphs(fileInputStream2)) {
-//            System.out.println(p);
-//            System.out.println();
-//        }
+
+
+        System.out.println("\n\n");
+        final FileInputStream fileInputStream = new FileInputStream(new File(outlines));
+        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {
+            System.out.println(page);
+            System.out.println();
+        }
+
+
+        System.out.println("\n\n");
+
+       final FileInputStream fileInputStream2 = new FileInputStream(new File(paragraphs));
+        for(Data.Paragraph p: DeserializeData.iterableParagraphs(fileInputStream2)) {
+            System.out.println(p);
+            System.out.println();
+        }
 
 
     }

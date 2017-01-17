@@ -1,7 +1,7 @@
 from trec_car.read_data import *
 import sys
 
-if len(sys.argv)<3:
+if len(sys.argv)<4:
     print("usage ",sys.argv[0]," articlefile outlinefile paragraphfile")
     exit()
 
