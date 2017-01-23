@@ -1,4 +1,3 @@
-
 from trec_car.format_runs import *
 from trec_car.read_data import *
 import itertools

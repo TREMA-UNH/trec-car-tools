@@ -167,7 +167,12 @@ class ParaBody(object):
         if tag == 0:
             return ParaText(cbor[1])
         elif tag == 1:
-            return ParaLink(cbor[1], cbor[2])
+            cbor_ = cbor[1]
+            linkSection = None
+            if len(cbor_[2]) == 1:
+                linkSection = cbor_[2][0]
+            linkTargetId = cbor_[3].decode('ascii')
+            return ParaLink(cbor_[1], linkSection, linkTargetId, cbor_[4])
         else:
             assert(False)
 
@@ -192,11 +197,16 @@ class ParaLink(ParaBody):
 
     Attributes:
       page          The page name of the link target
+      pageid        The link target as trec-car identifer
+      link_section  Reference to section, or None  (the part after the '#' the a URL)
       anchor_text   The anchor text of the link
     """
-    def __init__(self, page, anchor_text):
+    def __init__(self, page, link_section, pageid, anchor_text):
         self.page = page
+        self.pageid = pageid
+        self.link_section = link_section
         self.anchor_text = anchor_text
+
 
     def __str__(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)

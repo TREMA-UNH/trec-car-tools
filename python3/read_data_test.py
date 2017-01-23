@@ -34,7 +34,8 @@ with open(outlines, 'rb') as f:
         headings = p.nested_headings()
         print(headings)
 
-        print('heading 1=', p.outline()[0])
+        if len(p.outline())>2:
+            print('heading 1=', p.outline()[0])
 
         print('deep headings= ', p.deep_headings_list())
 
