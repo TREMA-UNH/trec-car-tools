@@ -236,7 +236,7 @@ public class DeserializeData {
                 List<DataItem> linkSectionMaybe = ((Array) array_.get(2)).getDataItems();
                 if(linkSectionMaybe.size()>0) {
                     UnicodeString linkSection = ((UnicodeString) linkSectionMaybe.get(0));
-                    return new Data.ParaLink(page.getString(), linkSection.getString(), new String(pageId.getBytes()), anchorText.getString());
+                    return new Data.ParaLink(page.getString(), new String(pageId.getBytes()), linkSection.getString(), anchorText.getString());
                 }else {
                     return new Data.ParaLink(page.getString(),  new String(pageId.getBytes()), anchorText.getString());
                 }

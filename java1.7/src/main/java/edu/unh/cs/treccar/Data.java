@@ -407,7 +407,7 @@ public class Data {
             this.linkSection = null;
         }
 
-        public ParaLink(String page, String linkSection, String pageId, String anchorText) {
+        public ParaLink(String page, String pageId, String linkSection, String anchorText) {
             this.linkSection = linkSection;
             this.pageId = pageId;
             this.anchorText = anchorText;
@@ -463,10 +463,10 @@ public class Data {
         @Override
         public String toString() {
             return "ParaLink{" +
-                    "linkSection='" + linkSection + '\'' +
+                    " page='" + page + '\'' +
+                    ", linkSection='" + linkSection + '\'' +
                     ", pageId='" + pageId + '\'' +
                     ", anchorText='" + anchorText + '\'' +
-                    ", page='" + page + '\'' +
                     '}';
         }
     }
