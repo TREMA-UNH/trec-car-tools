@@ -176,6 +176,24 @@ public class Data {
                     ", skeleton=" + skeleton +
                     '}';
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Page)) return false;
+
+            Page page = (Page) o;
+
+            if (getPageId() != null ? !getPageId().equals(page.getPageId()) : page.getPageId() != null) return false;
+            return getSkeleton() != null ? getSkeleton().equals(page.getSkeleton()) : page.getSkeleton() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getPageId() != null ? getPageId().hashCode() : 0;
+            result = 31 * result + (getSkeleton() != null ? getSkeleton().hashCode() : 0);
+            return result;
+        }
     }
 
     public final static class Section implements PageSkeleton{
@@ -228,13 +246,13 @@ public class Data {
 
             if (getHeadingId() != null ? !getHeadingId().equals(section.getHeadingId()) : section.getHeadingId() != null)
                 return false;
-            return getChildSections() != null ? getChildSections().equals(section.getChildSections()) : section.getChildSections() == null;
+            return getChildren() != null ? getChildren().equals(section.getChildren()) : section.getChildren() == null;
         }
 
         @Override
         public int hashCode() {
             int result = getHeadingId() != null ? getHeadingId().hashCode() : 0;
-            result = 31 * result + (getChildSections() != null ? getChildSections().hashCode() : 0);
+            result = 31 * result + (getChildren() != null ? getChildren().hashCode() : 0);
             return result;
         }
     }
@@ -258,6 +276,21 @@ public class Data {
             return "Para{" +
                     "paragraph=" + paragraph +
                     '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Para)) return false;
+
+            Para para = (Para) o;
+
+            return getParagraph() != null ? getParagraph().equals(para.getParagraph()) : para.getParagraph() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return getParagraph() != null ? getParagraph().hashCode() : 0;
         }
     }
 
@@ -308,6 +341,21 @@ public class Data {
             }
             return result;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Paragraph)) return false;
+
+            Paragraph paragraph = (Paragraph) o;
+
+            return getParaId() != null ? getParaId().equals(paragraph.getParaId()) : paragraph.getParaId() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return getParaId() != null ? getParaId().hashCode() : 0;
+        }
     }
 
 
@@ -329,15 +377,54 @@ public class Data {
                     "text='" + text + '\'' +
                     '}';
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ParaText)) return false;
+
+            ParaText paraText = (ParaText) o;
+
+            return getText() != null ? getText().equals(paraText.getText()) : paraText.getText() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return getText() != null ? getText().hashCode() : 0;
+        }
     }
 
     public final static class ParaLink implements ParaBody {
+        private final String linkSection;
+        private final String pageId;
         private final String anchorText;
         private final String page;
 
-        public ParaLink(String page, String anchorText) {
+        public ParaLink(String pageId, String anchorText, String page) {
+            this.pageId = pageId;
             this.anchorText = anchorText;
             this.page = page;
+            this.linkSection = null;
+        }
+
+        public ParaLink(String page, String linkSection, String pageId, String anchorText) {
+            this.linkSection = linkSection;
+            this.pageId = pageId;
+            this.anchorText = anchorText;
+            this.page = page;
+        }
+
+        public boolean hasLinkSection(){
+            return this.linkSection != null;
+        }
+
+        /** May return null if not defined. Check with #hasLinkSection*/
+        public String getLinkSection() {
+            return linkSection;
+        }
+
+        public String getPageId() {
+            return pageId;
         }
 
         public String getAnchorText() {
@@ -349,9 +436,36 @@ public class Data {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ParaLink)) return false;
+
+            ParaLink paraLink = (ParaLink) o;
+
+            if (getLinkSection() != null ? !getLinkSection().equals(paraLink.getLinkSection()) : paraLink.getLinkSection() != null)
+                return false;
+            if (getPageId() != null ? !getPageId().equals(paraLink.getPageId()) : paraLink.getPageId() != null)
+                return false;
+            if (getAnchorText() != null ? !getAnchorText().equals(paraLink.getAnchorText()) : paraLink.getAnchorText() != null)
+                return false;
+            return getPage() != null ? getPage().equals(paraLink.getPage()) : paraLink.getPage() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getLinkSection() != null ? getLinkSection().hashCode() : 0;
+            result = 31 * result + (getPageId() != null ? getPageId().hashCode() : 0);
+            result = 31 * result + (getAnchorText() != null ? getAnchorText().hashCode() : 0);
+            result = 31 * result + (getPage() != null ? getPage().hashCode() : 0);
+            return result;
+        }
+
+        @Override
         public String toString() {
             return "ParaLink{" +
-                    "anchorText='" + anchorText + '\'' +
+                    "linkSection='" + linkSection + '\'' +
+                    ", pageId='" + pageId + '\'' +
+                    ", anchorText='" + anchorText + '\'' +
                     ", page='" + page + '\'' +
                     '}';
         }

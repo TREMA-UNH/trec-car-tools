@@ -227,9 +227,19 @@ public class DeserializeData {
                 return new Data.ParaText(text.getString());
             }
             case 1: {
-                UnicodeString heading = (UnicodeString) array.get(1);
-                UnicodeString second = (UnicodeString) array.get(2);
-                return new Data.ParaLink(heading.getString(), second.getString());
+                List<DataItem> array_ = ((Array) array.get(1)).getDataItems();
+
+                UnicodeString page = (UnicodeString) array_.get(1);
+                ByteString pageId = (ByteString) array_.get(3);
+                UnicodeString anchorText = (UnicodeString) array_.get(4);
+                // this is either a list of one or zero elements
+                List<DataItem> linkSectionMaybe = ((Array) array_.get(2)).getDataItems();
+                if(linkSectionMaybe.size()>0) {
+                    UnicodeString linkSection = ((UnicodeString) linkSectionMaybe.get(0));
+                    return new Data.ParaLink(page.getString(), linkSection.getString(), new String(pageId.getBytes()), anchorText.getString());
+                }else {
+                    return new Data.ParaLink(page.getString(),  new String(pageId.getBytes()), anchorText.getString());
+                }
             }
             default: throw new RuntimeException("paraBodyFromCbor found an unhandled case: "+array.toString());
         }
