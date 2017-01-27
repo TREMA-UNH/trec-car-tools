@@ -10,7 +10,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>co.nstant.isn</groupId>
+            <groupId>co.nstant.in</groupId>
             <artifactId>cbor</artifactId>
             <version>0.7</version>
         </dependency>
