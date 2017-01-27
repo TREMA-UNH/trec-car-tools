@@ -154,6 +154,10 @@ class Paragraph(object):
         paragraphId = cbor[1].decode('ascii')
         return Paragraph(paragraphId, map(ParaBody.from_cbor, cbor[2]))
 
+    def get_text(self):
+        return ''.join([body.get_text() for body in self.bodies])
+
+
     def __str__(self, level=None):
         return ''.join(str(body) for body in self.bodies)
 
@@ -188,6 +192,9 @@ class ParaText(ParaBody):
     def __init__(self, text):
         self.text = text
 
+    def get_text(self):
+        return self.text
+
     def __str__(self, level=None):
         return self.text
 
@@ -206,6 +213,9 @@ class ParaLink(ParaBody):
         self.pageid = pageid
         self.link_section = link_section
         self.anchor_text = anchor_text
+
+    def get_text(self):
+        return self.anchor_text
 
 
     def __str__(self, level=None):
