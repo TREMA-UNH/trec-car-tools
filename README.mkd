@@ -40,10 +40,10 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
      ParaLink     -> $linkDest $anchor
 ~~~~~
 
-You can use any CBOR serialization library. Below a convenience library for reading the data into python (2.7)
+You can use any CBOR serialization library. Below a convenience library for reading the data into python (3.5)
 
 - `./read_data/trec_car_read_data.py` 
-Python 2.7 convenience library for reading the input data (in CBOR format).
+Python 3.5 convenience library for reading the input data (in CBOR format).
 -- If you use anaconda, please install the cbor library with `conda install -c auto cbor=1.0`
 -- Otherwise install it with `pypi install cbor`
 
