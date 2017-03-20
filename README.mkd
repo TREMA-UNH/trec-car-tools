@@ -49,28 +49,29 @@ Python 3.5 convenience library for reading the input data (in CBOR format).
 
 ## Ranking Results
 
-Given an outline, your task is to produce one ranking for each section $section (i.e. the query, representing an information need in traditional IR evaluations).
+Given an outline, your task is to produce one ranking for each section $section (representing an information need in traditional IR evaluations).
 
 Each ranked element is an (entity,passage) pair, meaning that this passage is relevant for the section, because it features a relevant entity. "Relevant" means that the entity or passage must/should/could be listed in this section. 
 
-The section ($qid) is represented by the path of headings in the outline `$pageName/$sectionHeading1/$sectionHeading1.1/.../$sectionHeading` in URL encoding.
+The section is represented by the path of headings in the outline `$pageTitle/$heading1/$heading1.1/.../$section` in URL encoding.
 
-The entity ($entity) is represented by the DBpedia entity id (derived from the Wikipedia URL). Optionally, the entity can be omitted.
+The entity is represented by the DBpedia entity id (derived from the Wikipedia URL). Optionally, the entity can be omitted.
 
-The passage ($passageId) is represented by the passage id given in the passage corpus (an MD5 hash of the content). Optionally, the passage can be omitted.
+The passage is represented by the passage id given in the passage corpus (an MD5 hash of the content). Optionally, the passage can be omitted.
+
 
 The results are provided in a format that is similar to the "trec\_results file format" of [trec_eval](http://trec.nist.gov/trec_eval). More info on how to use [trec_eval](http://stackoverflow.com/questions/4275825/how-to-evaluate-a-search-retrieval-engine-using-trec-eval) and [source](https://github.com/usnistgov/trec_eval).
 
 Example of ranking format
 ~~~~~
-     $qid                         $entity        $passageId     rank  sim   run_id 
-     Green\_sea\_turtle\Habitat   Pelagic\_zone  12345          1     27409 myTeam 
+     Green\_sea\_turtle\Habitat  Pelagic\_zone  12345          0     27409 myTeam 
+     $qid                        $entity        $passageId     rank  sim   run_id 
 ~~~~~
 
 
 
 ## Integration with other tools
-The *above ranking* can be converted into TREC formatted run by using code below. 
+
 It is recommended to use the format_runs package to write run files. Here an example:
 
 

@@ -53,7 +53,7 @@ class RankingEntry(object):
 
 def format_run(writer, ranking_of_paragraphs, exp_name=None):
     'write one ranking to the csv writer'
-    for ranking_entry in ranking_of_paragraphs:
+    for elem in ranking_of_paragraphs:
         # query-number    Q0  document-id rank    score   Exp
-        writer.write(" ".join([str(x) for x in ranking_entry.to_trec_eval_row(exp_name)]))
+        writer.write(" ".join([str(x) for x in elem.to_trec_eval_row(exp_name)]))
         writer.write("\n")
