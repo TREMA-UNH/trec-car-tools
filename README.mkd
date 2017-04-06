@@ -8,6 +8,11 @@ Current support for
 - Python 3.5
 - (Soon to come) Java 1.7
 
+If you are using anaconda, install the cbor library for python 3.5:
+    conda install -c auto cbor -c http://conda.binstar.org/laura-dietz
+
+
+
 ## How to use these tools?
 
 Step 1: Get the data from [http://trec-car.cs.unh.edu](http://trec-car.cs.unh.edu)
