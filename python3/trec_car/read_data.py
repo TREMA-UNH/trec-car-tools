@@ -49,7 +49,6 @@ class Page(object):
         return [child.nested_headings() for child in self.child_sections]
 
     def flat_headings_list(self):
-
         def flatten(prefix, headings):
             for section, children in headings:
                 new_prefix = prefix + [section]
@@ -60,8 +59,6 @@ class Page(object):
 
         deep_headings = self.deep_headings_list()
         return list(flatten([], deep_headings))
-
-
 
     @staticmethod
     def from_cbor(cbor):
@@ -86,6 +83,9 @@ class Page(object):
     def outline(self):
         return self.child_sections
 
+    def get_text(self):
+        return '\n'.join(skel.get_text() for skel in self.skeleton)
+
 class PageSkeleton(object):
     """ A minimal representation of the structure of a Wikipedia page. """
     @staticmethod
@@ -100,7 +100,8 @@ class PageSkeleton(object):
         else:
             assert(False)
 
-
+    def get_text(self):
+        raise NotImplementedError
 
 class Section(PageSkeleton):
     """
@@ -127,6 +128,9 @@ class Section(PageSkeleton):
     def nested_headings(self):
         return (self, [child.nested_headings() for child in self.child_sections])
 
+    def get_text(self):
+        return '\n'.join(child.get_text() for child in self.children)
+
 class Para(PageSkeleton):
     """
     A paragraph within a Wikipedia page.
@@ -139,6 +143,9 @@ class Para(PageSkeleton):
 
     def __str__(self, level=None):
         return str(self.paragraph)
+
+    def get_text(self):
+        return self.paragraph.get_text()
 
 class Paragraph(object):
     """
@@ -155,11 +162,10 @@ class Paragraph(object):
         return Paragraph(paragraphId, map(ParaBody.from_cbor, cbor[2]))
 
     def get_text(self):
-        return ''.join([body.get_text() for body in self.bodies])
-
+        return ' '.join(body.get_text() for body in self.bodies)
 
     def __str__(self, level=None):
-        return ''.join(str(body) for body in self.bodies)
+        return ' '.join(str(body) for body in self.bodies)
 
 class ParaBody(object):
     """
@@ -180,6 +186,8 @@ class ParaBody(object):
         else:
             assert(False)
 
+    def get_text(self):
+        raise NotImplementedError
 
 
 class ParaText(ParaBody):
@@ -216,7 +224,6 @@ class ParaLink(ParaBody):
 
     def get_text(self):
         return self.anchor_text
-
 
     def __str__(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)
