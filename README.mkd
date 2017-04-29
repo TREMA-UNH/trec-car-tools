@@ -5,11 +5,11 @@ Development tools for participants of the TREC Complex Answer Retrieval track.
 Data release support for v1.2.
 
 Current support for
-- Python 3.5
+- Python 3.5, 3.6
 - (Soon to come) Java 1.7
 
-If you are using anaconda, install the cbor library for python 3.5:
-    conda install -c auto cbor -c http://conda.binstar.org/laura-dietz
+If you are using anaconda, install the cbor library for python 3.5 / 3.6:
+    conda install -c laura-dietz cbor=1.0.0 
 
 
 
