@@ -161,6 +161,15 @@ public class DeserializeData {
         return new Data.Page(pageName.getString(), new String(pageId.getBytes()), pageSkeletonsFromCbor(skeletons));
     }
 
+    public static Data.Image imageFromCbor(DataItem imageUrlDataItem, DataItem skeletonDataItem) {
+        UnicodeString imageUrl = (UnicodeString) imageUrlDataItem;
+
+        return new Data.Image(imageUrl.getString(), pageSkeletonsFromCbor(skeletonDataItem));
+    }
+
+
+
+
     private static Data.Para paraFromCbor(DataItem dataItem){
         return new Data.Para(paragraphFromCbor(dataItem));
     }
@@ -190,6 +199,7 @@ public class DeserializeData {
                 return new Data.Section(heading.getString(), new String(headingId.getBytes()), pageSkeletonsFromCbor(array.get(3)));
             }
             case 1: return paraFromCbor((array.get(1)));
+            case 2: return imageFromCbor(array.get(1), array.get(2));
             default: throw new RuntimeException("pageSkeletonFromCbor found an unhandled case: "+array.toString());
         }
     }
