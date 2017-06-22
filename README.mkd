@@ -31,13 +31,14 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
 
 ~~~~~
      Page         -> $pageName [PageSkeleton]
-     PageSkeleton -> Section | Para
+     PageSkeleton -> Section | Para | Image
      Section      -> $sectionHeading [PageSkeleton]
      Para         -> Paragraph
      Paragraph    -> $paragraphId, [ParaBody]
+     Image        -> $imageURL [PageSkeleton]
      ParaBody     -> ParaText | ParaLink
      ParaText     -> $text
-     ParaLink     -> $linkDest $anchor
+     ParaLink     -> $targetPage $targetPageId $linkSection $anchorText
 ~~~~~
 
 You can use any CBOR serialization library. Below a convenience library for reading the data into python (2.7)
