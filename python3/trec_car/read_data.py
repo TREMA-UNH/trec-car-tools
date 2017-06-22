@@ -97,6 +97,10 @@ class PageSkeleton(object):
             return Section(heading, headingId, map(PageSkeleton.from_cbor, cbor[3]))
         elif tag == 1:
             return Para(Paragraph.from_cbor(cbor[1]))
+        elif tag == 2:
+            imageUrl = cbor[1]
+            caption = [PageSkeleton.from_cbor(elem) for elem in cbor[2]]
+            return Image(imageUrl, caption=caption)
         else:
             assert(False)
 
@@ -139,6 +143,23 @@ class Para(PageSkeleton):
 
     def __str__(self, level=None):
         return str(self.paragraph)
+
+
+class Image(PageSkeleton):
+    """
+    An image within a Wikipedia page.
+
+    Attributes:
+      caption    PageSkeleton representing the caption of the image
+      imageurl  URL to the image; spaces need to be replaced with underscores, Wikicommons namespace needs to be prefixed
+    """
+    def __init__(self, imageurl, caption):
+        self.caption = caption
+        self.imageurl = imageurl
+
+    def __str__(self, level=None):
+        return str("!["+self.imageurl+"]. Caption: "+(''.join([str(skel) for skel in self.caption])))
+
 
 class Paragraph(object):
     """

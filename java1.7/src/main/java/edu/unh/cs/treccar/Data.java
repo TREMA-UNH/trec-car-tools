@@ -294,6 +294,55 @@ public class Data {
         }
     }
 
+
+    public final static class Image implements PageSkeleton {
+        private final String imageUrl;
+        private final List<PageSkeleton> captionSkel;
+
+        public Image(String paraId, List<PageSkeleton> caption) {
+            this.imageUrl= paraId;
+            this.captionSkel = caption;
+        }
+
+        public String getImageUrl() {
+            return imageUrl;
+        }
+
+        public List<PageSkeleton> getCaptionSkel() {
+            return captionSkel;
+        }
+
+        @Override
+        public String toString() {
+            return "Image{" +
+                    "imageUrl='" + imageUrl + '\'' +
+                    ", caption=" + captionSkel +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Image)) return false;
+
+            Image image = (Image) o;
+
+            if (getImageUrl() != null ? !getImageUrl().equals(image.getImageUrl()) : image.getImageUrl() != null)
+                return false;
+            return getCaptionSkel() != null ? getCaptionSkel().equals(image.getCaptionSkel()) : image.getCaptionSkel() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getImageUrl() != null ? getImageUrl().hashCode() : 0;
+            result = 31 * result + (getCaptionSkel() != null ? getCaptionSkel().hashCode() : 0);
+            return result;
+        }
+    }
+
+
+
+
     public final static class Paragraph  {
         private final String paraId;
         private final List<ParaBody> bodies;
@@ -315,7 +364,7 @@ public class Data {
         public String toString() {
             return "Paragraph{" +
                     "paraId='" + paraId + '\'' +
-                    ", bodies=" + bodies +
+                    ", captionSkel=" + bodies +
                     '}';
         }
 
