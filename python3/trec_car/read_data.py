@@ -5,30 +5,6 @@ from __future__ import print_function
 import cbor
 import itertools
 
-class AnnotationsFile(object):
-    def __init__(self, fname):
-        """
-        Read annotations from a file.
-
-        Arguments:
-          fname      The name of the CBOR file. A table-of-contents file is
-                     also expected to be present.
-        """
-        self.cbor = open(fname, 'rb')
-        self.toc  = cbor.load(open(fname+'.toc', 'rb'))
-
-    def keys(self):
-        """ The page names contained in an annotations file. """
-        return self.toc.keys()
-
-    def get(self, page):
-        """ Lookup a page by name. Returns a Page or None """
-        offset = self.toc.get(page)
-        if offset is not None:
-            self.cbor.seek(offset)
-            return Page.from_cbor(cbor.load(self.cbor))
-        return None
-
 class Page(object):
     """
     The name and skeleton of a Wikipedia page.
@@ -260,3 +236,31 @@ def dump_annotations(file):
     for page in iter_annotations(file):
         print(page.to_string())
 
+def with_toc(read_val):
+    class AnnotationsFile(object):
+        def __init__(self, fname):
+            """
+            Read annotations from a file.
+
+            Arguments:
+            fname      The name of the CBOR file. A table-of-contents file is
+                        also expected to be present.
+            """
+            self.cbor = open(fname, 'rb')
+            self.toc  = cbor.load(open(fname+'.toc', 'rb'))
+
+        def keys(self):
+            """ The page names contained in an annotations file. """
+            return self.toc.keys()
+
+        def get(self, page):
+            """ Lookup a page by name. Returns a Page or None """
+            offset = self.toc.get(page)
+            if offset is not None:
+                self.cbor.seek(offset)
+                return read_val(cbor.load(self.cbor))
+            return None
+    return AnnotationsFile
+
+AnnotationsFile = with_toc(Page.from_cbor)
+ParagraphsFile = with_toc(Paragraph.from_cbor)
