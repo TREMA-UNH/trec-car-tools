@@ -5,8 +5,13 @@ Development tools for participants of the TREC Complex Answer Retrieval track.
 Data release support for v1.2.
 
 Current support for
-- Python 3.5
+- Python 3.5, 3.6
 - (Soon to come) Java 1.7
+
+If you are using anaconda, install the cbor library for python 3.5 / 3.6:
+    conda install -c laura-dietz cbor=1.0.0 
+
+
 
 ## How to use these tools?
 
@@ -31,13 +36,14 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
 
 ~~~~~
      Page         -> $pageName [PageSkeleton]
-     PageSkeleton -> Section | Para
+     PageSkeleton -> Section | Para | Image
      Section      -> $sectionHeading [PageSkeleton]
      Para         -> Paragraph
      Paragraph    -> $paragraphId, [ParaBody]
+     Image        -> $imageURL [PageSkeleton]
      ParaBody     -> ParaText | ParaLink
      ParaText     -> $text
-     ParaLink     -> $linkDest $anchor
+     ParaLink     -> $targetPage $targetPageId $linkSection $anchorText
 ~~~~~
 
 You can use any CBOR serialization library. Below a convenience library for reading the data into python (3.5)
