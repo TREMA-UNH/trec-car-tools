@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 import cbor
-import json
 import itertools
 
 class AnnotationsFile(object):
@@ -16,7 +15,7 @@ class AnnotationsFile(object):
                      also expected to be present.
         """
         self.cbor = open(fname, 'rb')
-        self.toc  = json.load(open(fname+'.json'))
+        self.toc  = cbor.load(open(fname+'.toc', 'rb'))
 
     def keys(self):
         """ The page names contained in an annotations file. """
@@ -119,7 +118,7 @@ class Section(PageSkeleton):
     def __str__(self, level=1):
         bar = "".join("="*level)
         children = "".join(c.__str__(level=level+1) for c in self.children)
-        return "%s %s %s\n\n%s" % (bar, self.heading, bar, children)
+        return "\n%s %s %s\n\n%s" % (bar, self.heading, bar, children)
 
     def __getitem__(self, idx):
         return self.children[idx]
