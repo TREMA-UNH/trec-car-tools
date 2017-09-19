@@ -153,7 +153,7 @@ class List(PageSkeleton):
         self.body = body
 
     def __str__(self, level=None):
-        return str("*" * self.level + " "+self.body)
+        return str("*" * self.level + " " + str(self.body) + '\n')
 
 
 class Paragraph(object):
