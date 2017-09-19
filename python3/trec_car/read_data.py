@@ -217,20 +217,29 @@ class ParaLink(ParaBody):
     def __str__(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)
 
+def _iter_with_header(file, parse, expected_file_type):
+    maybe_hdr = cbor.load(file)
+    if isinstance(maybe_hdr, list) and maybe_hdr[0] == 'CAR':
+        # we have a header
+        file_type = maybe_hdr[1][0]
+        assert file_type == expected_file_type
 
-def iter_paragraphs(file):
+        # read beginning of variable-length list
+        assert file.read(1) == b'\x9f'
+    else:
+        yield parse(maybe_hdr)
+
     while True:
         try:
-            yield Paragraph.from_cbor(cbor.load(file))
+            yield parse(cbor.load(file))
         except EOFError:
             break
 
 def iter_annotations(file):
-    while True:
-        try:
-            yield Page.from_cbor(cbor.load(file))
-        except EOFError:
-            break
+    return _iter_with_header(file, Page.from_cbor, 0)
+
+def iter_paragraphs(file):
+    return _iter_with_header(file, Paragraph.from_cbor, 2)
 
 def dump_annotations(file):
     for page in iter_annotations(file):
