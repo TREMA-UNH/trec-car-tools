@@ -76,6 +76,10 @@ class PageSkeleton(object):
             imageUrl = cbor[1]
             caption = [PageSkeleton.from_cbor(elem) for elem in cbor[2]]
             return Image(imageUrl, caption=caption)
+        elif tag == 3:
+            level = cbor[1]
+            body = Paragraph.from_cbor(cbor[2])
+            return List(level, body)
         else:
             assert(False)
 
@@ -134,6 +138,22 @@ class Image(PageSkeleton):
 
     def __str__(self, level=None):
         return str("!["+self.imageurl+"]. Caption: "+(''.join([str(skel) for skel in self.caption])))
+
+
+class List(PageSkeleton):
+    """
+    An list element within a Wikipedia page.
+
+    Attributes:
+      level     The list nesting level
+      body      A Paragraph containing the element body.
+    """
+    def __init__(self, level, body):
+        self.level = level
+        self.body = body
+
+    def __str__(self, level=None):
+        return str("*" * self.level + " "+self.body)
 
 
 class Paragraph(object):
