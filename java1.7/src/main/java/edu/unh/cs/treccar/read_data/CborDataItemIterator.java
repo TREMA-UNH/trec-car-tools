@@ -33,8 +33,9 @@ public class CborDataItemIterator implements Iterator<DataItem> {
     }
 
     public DataItem next() {
+        DataItem current = this.next;
         this.next = lowLevelNext();
-        return this.next;
+        return current;
     }
 
     public void remove() {
