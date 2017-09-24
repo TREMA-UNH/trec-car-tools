@@ -196,7 +196,7 @@ public class Data {
         }
     }
 
-    public final static class Section implements PageSkeleton{
+    public final static class Section implements PageSkeleton {
         private final String heading;
         private final String headingId;
         private final List<PageSkeleton> children;
@@ -340,7 +340,28 @@ public class Data {
         }
     }
 
+    public final static class ListItem implements PageSkeleton {
+        private final int nestingLevel;
+        private final Paragraph bodyParagraph;
 
+        public ListItem(int nestingLevel, Paragraph bodyParagraph) {
+            this.nestingLevel = nestingLevel;
+            this.bodyParagraph = bodyParagraph;
+        }
+
+        public int getNestingLevel() {
+            return nestingLevel;
+        }
+
+        public Paragraph getBodyParagraph() {
+            return bodyParagraph;
+        }
+
+        @Override
+        public String toString() {
+            return "* " + bodyParagraph.toString();
+        }
+    }
 
 
     public final static class Paragraph  {
