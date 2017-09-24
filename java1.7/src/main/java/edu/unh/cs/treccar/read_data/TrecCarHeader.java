@@ -37,7 +37,7 @@ public class TrecCarHeader {
         return FileType.fromInt(((UnsignedInteger) array.get(0)).getValue().intValue());
     }
 
-    public TrecCarHeader(DataItem dataItem) throws CborException {
+    public TrecCarHeader(DataItem dataItem) throws InvalidHeaderException {
         List<DataItem> array = ((Array) dataItem).getDataItems();
         if (array.size() != 3) {
             throw new RuntimeException("TrecCarHeader: invalid length");
@@ -50,5 +50,9 @@ public class TrecCarHeader {
 
         fileType = decodeFileType(array.get(1));
         provenance = new Provenance(array.get(2));
+    }
+
+    public static class InvalidHeaderException extends Exception {
+        public InvalidHeaderException() {}
     }
 }

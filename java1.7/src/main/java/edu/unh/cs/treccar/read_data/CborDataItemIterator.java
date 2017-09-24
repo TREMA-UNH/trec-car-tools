@@ -6,33 +6,22 @@ import co.nstant.in.cbor.model.*;
 
 import java.util.Iterator;
 
-public abstract class CborListIterator<T> implements Iterator<T> {
+public class CborDataItemIterator implements Iterator<DataItem> {
     private CborDecoder decoder;
-    private T next;
+    private DataItem next;
 
-    public CborListIterator(CborDecoder decoder) throws CborRuntimeException {
+    public CborDataItemIterator(CborDecoder decoder) throws CborRuntimeException {
         this.decoder = decoder;
-
-        // decode contents, this should begin with an indefinite array
-        try {
-            this.decoder.setAutoDecodeInfinitiveArrays(false);
-            Array arr = (Array) decoder.decodeNext();
-            this.decoder.setAutoDecodeInfinitiveArrays(true);
-        } catch (CborException e) {
-            throw new CborRuntimeException(e);
-        }
         this.next = lowLevelNext();
     }
 
-    abstract protected T decodeItem(DataItem item);
-
-    private T lowLevelNext() throws CborRuntimeException {
+    private DataItem lowLevelNext() throws CborRuntimeException {
         try {
             DataItem dataItem = decoder.decodeNext();
             if (Special.BREAK.equals(dataItem)) {
                 return null;
             } else {
-                return decodeItem(dataItem);
+                return dataItem;
             }
         } catch (CborException e) {
             throw new CborRuntimeException(e);
@@ -43,7 +32,7 @@ public abstract class CborListIterator<T> implements Iterator<T> {
         return this.next != null;
     }
 
-    public T next() {
+    public DataItem next() {
         this.next = lowLevelNext();
         return this.next;
     }

@@ -11,26 +11,21 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.unh.cs.treccar.Data;
+import edu.unh.cs.treccar.read_data.CborListWithHeaderIterator;
 
 public class DeserializeData {
 
     public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborRuntimeException {
-        class PageIterator extends CborListIterator<Data.Page> {
+        class PageIterator extends CborListWithHeaderIterator<Data.Page> {
             public PageIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
-            protected Data.Page decodeItem(DataItem dataItem) {
+            protected Data.Page parseItem(DataItem dataItem) {
                 return pageFromCbor(dataItem);
             }
         };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-        try {
-            TrecCarHeader header = new TrecCarHeader(decode);
-            // todo use the header information
-        } catch (CborException e) {
-            throw new CborRuntimeException(e);
-        }
         return new PageIterator(decode);
     }
 
@@ -54,22 +49,16 @@ public class DeserializeData {
 
 
     public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborRuntimeException {
-        class ParagraphIterator extends CborListIterator<Data.Paragraph> {
+        class ParagraphIterator extends CborListWithHeaderIterator<Data.Paragraph> {
             ParagraphIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
-            protected Data.Paragraph decodeItem(DataItem dataItem) {
+            protected Data.Paragraph parseItem(DataItem dataItem) {
                 return paragraphFromCbor(dataItem);
             }
         };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-        try {
-            TrecCarHeader header = new TrecCarHeader(decode);
-            // todo use the header
-        } catch (CborException e) {
-            throw new CborRuntimeException(e);
-        }
         return new ParagraphIterator(decode);
     }
 
