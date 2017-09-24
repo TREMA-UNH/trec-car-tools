@@ -5,6 +5,7 @@ import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import edu.unh.cs.treccar.read_data.Provenance;
 
@@ -43,7 +44,7 @@ public class TrecCarHeader {
         }
 
         String magicWord = ((UnicodeString) array.get(0)).getString();
-        if (magicWord != "CAR") {
+        if (!Objects.equals(magicWord, "CAR")) {
             throw new RuntimeException("TrecCarHeader: invalid magic word");
         }
 
