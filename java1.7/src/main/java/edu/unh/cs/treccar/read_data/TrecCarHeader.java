@@ -31,8 +31,12 @@ public class TrecCarHeader {
         }
     };
 
-    public TrecCarHeader(CborDecoder decoder) throws CborException {
-        DataItem dataItem = decoder.decodeNext();
+    private FileType decodeFileType(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+        return FileType.fromInt(((UnsignedInteger) array.get(0)).getValue().intValue());
+    }
+
+    public TrecCarHeader(DataItem dataItem) throws CborException {
         List<DataItem> array = ((Array) dataItem).getDataItems();
         if (array.size() != 3) {
             throw new RuntimeException("TrecCarHeader: invalid length");
@@ -43,7 +47,7 @@ public class TrecCarHeader {
             throw new RuntimeException("TrecCarHeader: invalid magic word");
         }
 
-        fileType = FileType.fromInt(((UnsignedInteger) array.get(1)).getValue().intValue());
+        fileType = decodeFileType(array.get(1));
         provenance = new Provenance(array.get(2));
     }
 }
