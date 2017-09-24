@@ -349,7 +349,7 @@ def _iter_with_header(file, parse, expected_file_type):
         try:
             # Check for break symbol
             b = file.peek(1)
-            if b == 0xff:
+            if b[0:1] == b'\xff':
                 break
 
             yield parse(cbor.load(file))
