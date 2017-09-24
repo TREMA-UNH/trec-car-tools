@@ -48,10 +48,13 @@ public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
     }
 
     public T next() {
-        if (this.firstElem != null)
-            return parseItem(this.firstElem);
-        else
+        if (this.firstElem != null) {
+            DataItem first = this.firstElem;
+            this.firstElem = null;
+            return parseItem(first);
+        } else {
             return parseItem(this.listIter.next());
+        }
     }
 
     protected abstract T parseItem(DataItem dataItem);
