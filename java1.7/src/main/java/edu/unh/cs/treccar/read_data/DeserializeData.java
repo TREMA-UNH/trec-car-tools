@@ -9,65 +9,32 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import edu.unh.cs.treccar.Data;
 
-/**
- * User: dietz
- * Date: 12/9/16
- * Time: 1:56 PM
- */
+import edu.unh.cs.treccar.Data;
+import edu.unh.cs.treccar.read_data.CborListIterator;
+
 public class DeserializeData {
-    
- 
-    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborException {
+
+    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws RuntimeCborException {
+        class PageIterator extends CborListIterator<Data.Page> {
+            public PageIterator(CborDecoder decoder) throws RuntimeCborException {
+                super(decoder);
+            }
+            protected Data.Page decodeItem(DataItem dataItem) {
+                return pageFromCbor(dataItem);
+            }
+        };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-
-        return new Iterator<Data.Page>(){
-            Data.Page next = lowLevelNext();
-            @Override
-            public boolean hasNext() {
-                return next!=null;
-            }
-
-            private Data.Page lowLevelNext() throws CborException {
-                DataItem dataItem = decode.decodeNext();
-                if (dataItem != null) {
-                    Data.Page page = pageFromCbor(dataItem);
-                    return page;
-                } else return null;
-            }
-
-            @Override
-            public Data.Page next() {
-                Data.Page curr = next;
-                try {
-                    next = lowLevelNext();
-                } catch (CborException e) {
-                    e.printStackTrace();
-                    next=null;
-                }
-                return curr;
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException("read-only");
-            }
-        } ;
-
+        TrecCarHeader hdr = new TrecCarHeader(decode);
+        return new PageIterator(decode);
     }
 
 
     public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws RuntimeCborException {
         return new Iterable<Data.Page>() {
-            @Override
             public Iterator<Data.Page> iterator() {
-                try{
-                    return iterAnnotations(inputStream);
-                } catch (CborException e) {
-                    throw new RuntimeCborException(e);
-                }
+                return iterAnnotations(inputStream);
             }
         };
     }
@@ -76,75 +43,32 @@ public class DeserializeData {
     /**
      * @return null if no valid object can be located at the byte offset
      */
-    private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws CborException, IOException {
-        try{
-            inputStream.skip(offset);
-            return iterAnnotations(inputStream).next();
-        } catch (CborException e) {
-            throw new RuntimeCborException(e);
-        }
-
+    private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws RuntimeCborException, IOException {
+        inputStream.skip(offset);
+        return iterAnnotations(inputStream).next();
     }
 
 
-    public static class RuntimeCborException extends RuntimeException {
-        public RuntimeCborException(CborException cause) {
-            super(cause);
-        }
-    }
-
-
-    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborException {
+    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws RuntimeCborException {
+        class ParagraphIterator extends CborListIterator<Data.Paragraph> {
+            ParagraphIterator(CborDecoder decoder) throws RuntimeCborException {
+                super(decoder);
+            }
+            protected Data.Paragraph decodeItem(DataItem dataItem) {
+                return paragraphFromCbor(dataItem);
+            }
+        };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-
-        return new Iterator<Data.Paragraph>(){
-            Data.Paragraph next = lowLevelNext();
-            @Override
-            public boolean hasNext() {
-                return next!=null;
-            }
-
-            private Data.Paragraph lowLevelNext() throws CborException {
-                DataItem dataItem = decode.decodeNext();
-                if (dataItem != null) {
-                    Data.Paragraph paragraph = paragraphFromCbor(dataItem);
-                    return paragraph;
-                } else return null;
-            }
-
-            @Override
-            public Data.Paragraph next() {
-                Data.Paragraph curr = next;
-                try {
-                    next = lowLevelNext();
-                } catch (CborException e) {
-                    e.printStackTrace();
-                    next=null;
-                }
-                return curr;
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException("read-only");
-            }
-        } ;
-
+        TrecCarHeader hdr = new TrecCarHeader(decode);
+        return new ParagraphIterator(decode);
     }
 
 
-
-    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborException {
+    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws RuntimeCborException {
         return new Iterable<Data.Paragraph>() {
-            @Override
             public Iterator<Data.Paragraph> iterator() {
-                try {
-                    return iterParagraphs(inputStream);
-                } catch (CborException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+                return iterParagraphs(inputStream);
             }
         };
     }
@@ -208,7 +132,7 @@ public class DeserializeData {
         Array skeletons = (Array) dataItem;
         List<Data.PageSkeleton> result = new ArrayList<Data.PageSkeleton>();
         for(DataItem item:skeletons.getDataItems()){
-            if(isSpecialBreak(item))  break;
+            if (Special.BREAK.equals(item))  break;
             result.add(pageSkeletonFromCbor(item));
         }
         return result;
@@ -220,7 +144,7 @@ public class DeserializeData {
         Array bodies = (Array) dataItem;
         List<Data.ParaBody> result = new ArrayList<Data.ParaBody>();
         for (DataItem item : bodies.getDataItems()) {
-            if (isSpecialBreak(item)) break;
+            if (Special.BREAK.equals(item)) break;
             result.add(paraBodyFromCbor(item));
         }
         return result;
@@ -254,10 +178,4 @@ public class DeserializeData {
             default: throw new RuntimeException("paraBodyFromCbor found an unhandled case: "+array.toString());
         }
     }
-    
-    
-    private static boolean isSpecialBreak(DataItem item) {
-        return item.getMajorType()== MajorType.SPECIAL && ((Special) item).getSpecialType() == SpecialType.BREAK;
-    }
-
 }
