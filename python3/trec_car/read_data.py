@@ -347,6 +347,11 @@ def _iter_with_header(file, parse, expected_file_type):
 
     while True:
         try:
+            # Check for break symbol
+            b = file.peek(1)
+            if b == 0xff:
+                break
+
             yield parse(cbor.load(file))
         except EOFError:
             break
