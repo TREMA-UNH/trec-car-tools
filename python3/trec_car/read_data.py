@@ -12,12 +12,14 @@ class Page(object):
     Attributes:
       page_name    The name of the page (str)
       skeleton     Its structure (a list of PageSkeletons)
+      page_meta     MetaData for page
     """
-    def __init__(self, page_name, page_id, skeleton):
+    def __init__(self, page_name, page_id, skeleton, page_meta):
         self.page_name = page_name
         self.page_id = page_id
         self.skeleton = list(skeleton)
         self.child_sections = [child for child in self.skeleton if isinstance(child, Section)]
+        self.page_meta = page_meta
 
 
     def deep_headings_list(self):
@@ -45,13 +47,18 @@ class Page(object):
         pagename = cbor[1]
         # assert cbor[2][0] == 0 # PageId tag
         pageId = cbor[2].decode('ascii')
-        return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]))
+        if len(cbor)==4:
+            return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.default())
+        else:
+            return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.from_cbor(cbor[4]))
+            
 
     def __str__(self):
         return "Page(%s)" % self.page_name
 
     def to_string(self):
-        return self.page_name + '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' + '\n'.join(str(s) for s in self.skeleton)
+        return self.page_name + self.page_meta +\
+               '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' + '\n'.join(str(s) for s in self.skeleton)
 
     def nested_headings(self):
         '''Each heading recursively represented by a pair of (heading, list_of_children) '''
@@ -60,6 +67,95 @@ class Page(object):
 
     def outline(self):
         return self.child_sections
+
+# data PageType = ArticlePage
+# | CategoryPage
+# | DisambiguationPage
+# | RedirectPage PageId
+#
+
+class PageType(object):
+    @staticmethod
+    def from_cbor(cbor):
+        typetag = cbor[0]
+        if typetag == 0: return ArticlePage()
+        elif typetag == 1: return CategoryPage()
+        elif typetag == 2: return DisambiguationPage()
+        elif typetag == 3:
+            targetPage = cbor[1].decode('ascii')
+            return RedirectPage(targetPage)
+        else:
+            print("Deserialisation error for PageType cbor="+cbor)
+            assert(False)
+
+class ArticlePage(PageType):
+    def __init__(self):
+        pass
+    def __str__(self): return "ArticlePage"
+
+class CategoryPage(PageType):
+    def __init__(self):
+        pass
+    def __str__(self): return "CategoryPage"
+
+class DisambiguationPage(PageType):
+    def __init__(self):
+        pass
+    def __str__(self): return "Disambiguation Page"
+
+class RedirectPage(PageType):
+    def __init__(self, targetPage):
+        self.targetPage = targetPage
+    def __str__(self):
+        return "RedirectPage " + self.targetPage
+
+
+
+class PageMetadata(object):
+    """Meta data for a page"""
+    def __init__(self, pageType, redirectNames,disambiguationNames,disambiguationIds,  categoryNames, categoryIds, inlinkIds):
+        self.inlinkIds = inlinkIds
+        self.categoryIds = categoryIds
+        self.categoryNames = categoryNames
+        self.disambiguationIds = disambiguationIds
+        self.disambiguationNames = disambiguationNames
+        self.redirectNames = redirectNames
+        self.pageType = pageType
+
+    @staticmethod
+    def default(self):
+        return PageMetadata(ArticlePage(), None, None, None ,None, None, None)
+        
+    def __str__(self):
+        redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
+        disamStr = ("" if self.disambiguationNames is None else (" disambiguated = "+", ".join([name for name in self.disambiguationNames])))
+        catStr = ("" if self.redirectNames is None else (" categories = "+", ".join([name for name in self.categoryNames])))
+        inlinkStr = ("" if self.inlinkIds is None else (" inlinks = "+", ".join([name for name in self.inlinkIds])))
+        return  "%s %s %s %s %s" % (self.pageType, redirStr, disamStr, catStr, inlinkStr)
+
+    @staticmethod
+    def from_cbor(cbor):
+        pageType=PageType.from_cbor(cbor[1])
+
+        def decodeListOfIdList(cbor):
+            if len(cbor)==0: return None
+            else:
+                lst = cbor[0]
+                [elem.decode('ascii') for elem in lst]
+
+        def decodeListOfNameList(cbor):
+            if len(cbor)==0: return None
+            else:
+                return cbor[0]
+
+        redirectNames=decodeListOfNameList(cbor[2])
+        disambiguationNames=decodeListOfNameList(cbor[3])
+        disambiguationIds=decodeListOfIdList(cbor[4])
+        categoryNames=decodeListOfNameList(cbor[5])
+        categoryIds=decodeListOfIdList(cbor[6])
+        inlinkIds=decodeListOfIdList(cbor[7])
+
+        return PageMetadata(pageType, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds)
 
 class PageSkeleton(object):
     """ A minimal representation of the structure of a Wikipedia page. """
