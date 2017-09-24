@@ -11,13 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.unh.cs.treccar.Data;
-import edu.unh.cs.treccar.read_data.CborListIterator;
 
 public class DeserializeData {
 
-    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws RuntimeCborException {
+    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborRuntimeException {
         class PageIterator extends CborListIterator<Data.Page> {
-            public PageIterator(CborDecoder decoder) throws RuntimeCborException {
+            public PageIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
             protected Data.Page decodeItem(DataItem dataItem) {
@@ -26,12 +25,17 @@ public class DeserializeData {
         };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-        TrecCarHeader hdr = new TrecCarHeader(decode);
+        try {
+            TrecCarHeader header = new TrecCarHeader(decode);
+            // todo use the header information
+        } catch (CborException e) {
+            throw new CborRuntimeException(e);
+        }
         return new PageIterator(decode);
     }
 
 
-    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws RuntimeCborException {
+    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborRuntimeException {
         return new Iterable<Data.Page>() {
             public Iterator<Data.Page> iterator() {
                 return iterAnnotations(inputStream);
@@ -43,15 +47,15 @@ public class DeserializeData {
     /**
      * @return null if no valid object can be located at the byte offset
      */
-    private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws RuntimeCborException, IOException {
+    private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws CborRuntimeException, IOException {
         inputStream.skip(offset);
         return iterAnnotations(inputStream).next();
     }
 
 
-    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws RuntimeCborException {
+    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborRuntimeException {
         class ParagraphIterator extends CborListIterator<Data.Paragraph> {
-            ParagraphIterator(CborDecoder decoder) throws RuntimeCborException {
+            ParagraphIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
             protected Data.Paragraph decodeItem(DataItem dataItem) {
@@ -60,12 +64,17 @@ public class DeserializeData {
         };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-        TrecCarHeader hdr = new TrecCarHeader(decode);
+        try {
+            TrecCarHeader header = new TrecCarHeader(decode);
+            // todo use the header
+        } catch (CborException e) {
+            throw new CborRuntimeException(e);
+        }
         return new ParagraphIterator(decode);
     }
 
 
-    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws RuntimeCborException {
+    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborRuntimeException {
         return new Iterable<Data.Paragraph>() {
             public Iterator<Data.Paragraph> iterator() {
                 return iterParagraphs(inputStream);
