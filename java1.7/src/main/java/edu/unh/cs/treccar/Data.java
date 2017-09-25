@@ -32,13 +32,51 @@ public class Data {
     }
 
 
+    public static enum PageType {
+        Article(0), Category(1), Disambiguation(2), Redirect(3);
+
+        private int value;
+        private PageType(int value) {
+            this.value = value;
+        }
+
+        private static PageType[] values = null;
+        public static PageType fromInt(int i) {
+            if (PageType.values == null) {
+                PageType.values = PageType.values();
+            }
+            return PageType.values[i];
+        }
+    }
+
+    public final static class PageMetadata {
+        private final PageType pageType;
+        private final ArrayList<String> redirectNames;
+        private final ArrayList<String> disambiguationNames;
+        private final ArrayList<String> disambiguationIds;
+        private final ArrayList<String> categoryNames;
+        private final ArrayList<String> categoryIds;
+        private final ArrayList<String> inlinkIds;
+
+        public PageMetadata(PageType pageType, ArrayList<String> redirectNames, ArrayList<String> disambiguationNames, ArrayList<String> disambiguationIds, ArrayList<String> categoryNames, ArrayList<String> categoryIds, ArrayList<String> inlinkIds) {
+            this.pageType = pageType;
+            this.redirectNames = redirectNames;
+            this.disambiguationNames = disambiguationNames;
+            this.disambiguationIds = disambiguationIds;
+            this.categoryNames = categoryNames;
+            this.categoryIds = categoryIds;
+            this.inlinkIds = inlinkIds;
+        }
+    }
+
     public final static class Page {
         private final String pageName;
         private final String pageId;
         private final List<PageSkeleton> skeleton;
         private final ArrayList<Section> childSections;
+        private final PageMetadata pageMetadata;
 
-        public Page(String pageName, String pageId, List<PageSkeleton> skeleton) {
+        public Page(String pageName, String pageId, List<PageSkeleton> skeleton, PageMetadata pageMetadata) {
             this.pageName = pageName;
             this.pageId = pageId;
             this.skeleton = skeleton;
@@ -46,7 +84,7 @@ public class Data {
             for(PageSkeleton skel : skeleton) {
                 if (skel instanceof Section) childSections.add((Section) skel);
             }
-
+            this.pageMetadata = pageMetadata;
         }
 
         public String getPageName() {
@@ -63,6 +101,10 @@ public class Data {
 
         public ArrayList<Section> getChildSections() {
             return childSections;
+        }
+
+        public PageMetadata getPageMetadata() {
+            return pageMetadata;
         }
 
         private static List<List<Section>> flatSectionPaths_(List<Section> prefix, List<Section> headings) {
@@ -173,6 +215,7 @@ public class Data {
         public String toString() {
             return "Page{" +
                     "pageName='" + pageName + '\'' +
+                    ", pageMetadata=" + pageMetadata +
                     ", skeleton=" + skeleton +
                     '}';
         }

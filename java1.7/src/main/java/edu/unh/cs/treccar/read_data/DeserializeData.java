@@ -71,6 +71,60 @@ public class DeserializeData {
         };
     }
 
+    private static ArrayList<String> getMaybeListPageNames(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+        if (array.size() == 0) {
+            return null;
+        } else if (array.size() == 1) {
+            List<DataItem> resultArray = ((Array) array.get(0)).getDataItems();
+            ArrayList<String> result = new ArrayList(resultArray.size());
+            for (DataItem item: resultArray) {
+                if (Special.BREAK.equals(item)) {
+                    break;
+                }
+                String s = ((UnicodeString) item).getString();
+                result.add(s);
+            }
+            return result;
+        } else {
+            throw new RuntimeException("Invalid Maybe [PageName]");
+        }
+    }
+
+    private static ArrayList<String> getMaybeListPageIds(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+        if (array.size() == 0) {
+            return null;
+        } else if (array.size() == 1) {
+            List<DataItem> resultArray = ((Array) array.get(0)).getDataItems();
+            ArrayList<String> result = new ArrayList(resultArray.size());
+            for (DataItem item: resultArray) {
+                if (Special.BREAK.equals(item)) {
+                    break;
+                }
+                String s = new String(((ByteString) item).getBytes());
+                result.add(s);
+            }
+            return result;
+        } else {
+            throw new RuntimeException("Invalid Maybe [PageId]");
+        }
+    }
+
+    public static Data.PageMetadata pageMetadataFromCbor(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+
+        assert(array.get(0).getTag().getValue() == 0L);
+        Data.PageType pageType = Data.PageType.fromInt(((UnsignedInteger) (((Array) array.get(1)).getDataItems().get(0))).getValue().intValue());
+        ArrayList<String> redirectNames = getMaybeListPageNames(array.get(2));
+        ArrayList<String> disambiguationNames = getMaybeListPageNames(array.get(3));
+        ArrayList<String> disambiguationIds = getMaybeListPageIds(array.get(4));
+        ArrayList<String> categoryNames = getMaybeListPageNames(array.get(5));
+        ArrayList<String> categoryIds = getMaybeListPageIds(array.get(6));
+        ArrayList<String> inlinkIds = getMaybeListPageIds(array.get(7));
+        return new Data.PageMetadata(pageType, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds);
+    }
+
     public static Data.Page pageFromCbor(DataItem dataItem) {
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
@@ -79,8 +133,12 @@ public class DeserializeData {
         UnicodeString pageName = (UnicodeString) array.get(1);
         ByteString pageId = (ByteString) array.get(2);
         DataItem skeletons = array.get(3);
+        Data.PageMetadata pageMetadata = null;
+        if (array.size() > 4) {
+            pageMetadata = pageMetadataFromCbor(array.get(4));
+        }
 
-        return new Data.Page(pageName.getString(), new String(pageId.getBytes()), pageSkeletonsFromCbor(skeletons));
+        return new Data.Page(pageName.getString(), new String(pageId.getBytes()), pageSkeletonsFromCbor(skeletons), pageMetadata);
     }
 
     private static Data.Image imageFromCbor(DataItem imageUrlDataItem, DataItem skeletonDataItem) {
