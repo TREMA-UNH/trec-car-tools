@@ -51,7 +51,7 @@ class Page(object):
             return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.default())
         else:
             return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.from_cbor(cbor[4]))
-            
+
 
     def __str__(self):
         return "Page(%s)" % self.page_name
@@ -123,9 +123,9 @@ class PageMetadata(object):
         self.pageType = pageType
 
     @staticmethod
-    def default(self):
+    def default():
         return PageMetadata(ArticlePage(), None, None, None ,None, None, None)
-        
+
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
         disamStr = ("" if self.disambiguationNames is None else (" disambiguated = "+", ".join([name for name in self.disambiguationNames])))
