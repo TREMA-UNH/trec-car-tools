@@ -40,12 +40,16 @@ public class TrecCarHeader {
     public TrecCarHeader(DataItem dataItem) throws InvalidHeaderException {
         List<DataItem> array = ((Array) dataItem).getDataItems();
         if (array.size() != 3) {
-            throw new RuntimeException("TrecCarHeader: invalid length");
+            throw new InvalidHeaderException();
         }
 
-        String magicWord = ((UnicodeString) array.get(0)).getString();
-        if (!Objects.equals(magicWord, "CAR")) {
-            throw new RuntimeException("TrecCarHeader: invalid magic word");
+        try {
+            String magicWord = ((UnicodeString) array.get(0)).getString();
+            if (!Objects.equals(magicWord, "CAR")) {
+                throw new InvalidHeaderException();
+            }
+        } catch (ClassCastException e) {
+            throw new InvalidHeaderException();
         }
 
         fileType = decodeFileType(array.get(1));
