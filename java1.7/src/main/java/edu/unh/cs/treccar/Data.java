@@ -404,6 +404,24 @@ public class Data {
         public String toString() {
             return "* " + bodyParagraph.toString();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ListItem)) return false;
+
+            ListItem listItem = (ListItem) o;
+
+            if (getNestingLevel() != listItem.getNestingLevel()) return false;
+            return getBodyParagraph() != null ? getBodyParagraph().equals(listItem.getBodyParagraph()) : listItem.getBodyParagraph() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getNestingLevel();
+            result = 31 * result + (getBodyParagraph() != null ? getBodyParagraph().hashCode() : 0);
+            return result;
+        }
     }
 
 
