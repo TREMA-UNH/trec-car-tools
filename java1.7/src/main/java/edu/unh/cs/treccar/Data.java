@@ -531,7 +531,7 @@ public class Data {
         private final String anchorText;
         private final String page;
 
-        public ParaLink(String pageId, String anchorText, String page) {
+        public ParaLink(String page, String pageId, String anchorText) {
             this.pageId = pageId;
             this.anchorText = anchorText;
             this.page = page;
