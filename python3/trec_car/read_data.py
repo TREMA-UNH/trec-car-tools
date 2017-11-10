@@ -38,7 +38,6 @@ class Page(object):
         self.child_sections = [child for child in self.skeleton if isinstance(child, Section)]
         self.page_meta = page_meta
 
-
     def deep_headings_list(self):
         return [child.nested_headings() for child in self.child_sections]
 
@@ -59,8 +58,6 @@ class Page(object):
         deep_headings = self.deep_headings_list()
         return list(flatten([], deep_headings))
 
-
-
     @staticmethod
     def from_cbor(cbor):
         assert cbor[0] == 0 # tag
@@ -72,7 +69,6 @@ class Page(object):
             return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.default())
         else:
             return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.from_cbor(cbor[4]))
-
 
     def __str__(self):
         return "Page(%s)" % self.page_name
@@ -93,12 +89,6 @@ class Page(object):
 
     def outline(self):
         return self.child_sections
-
-# data PageType = ArticlePage
-# | CategoryPage
-# | DisambiguationPage
-# | RedirectPage PageId
-#
 
 class PageType(object):
     """
@@ -145,8 +135,6 @@ class RedirectPage(PageType):
         self.targetPage = targetPage
     def __str__(self):
         return "RedirectPage " + self.targetPage
-
-
 
 class PageMetadata(object):
     """
@@ -267,8 +255,6 @@ class PageSkeleton(object):
         else:
             assert(False)
 
-
-
 class Section(PageSkeleton):
     """
     A section of a Wikipedia page.
@@ -343,7 +329,6 @@ class Image(PageSkeleton):
     def __str__(self, level=None):
         return str("!["+self.imageurl+"]. Caption: "+(''.join([str(skel) for skel in self.caption])))
 
-
 class List(PageSkeleton):
     """
     An list element within a Wikipedia page.
@@ -364,7 +349,6 @@ class List(PageSkeleton):
 
     def __str__(self, level=None):
         return str("*" * self.level + " " + str(self.body) + '\n')
-
 
 class Paragraph(object):
     """
@@ -405,8 +389,6 @@ class ParaBody(object):
             return ParaLink(cbor_[1], linkSection, linkTargetId, cbor_[4])
         else:
             assert(False)
-
-
 
 class ParaText(ParaBody):
     """
