@@ -1,10 +1,8 @@
 Welcome to trec-car-tools's documentation!
 ==========================================
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
+This is the documentation for ``trec-car-tools``, a Python 3 library for reading
+and manipulating the TREC Complex Answer Retrieval (CAR) dataset.
 
 Reading the dataset
 -------------------
