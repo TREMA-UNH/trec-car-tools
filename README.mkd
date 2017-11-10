@@ -11,7 +11,8 @@ Current support for
 - Python 3.5, 3.6
 - Java 1.7
 
-If you are using anaconda, install the cbor library for python 3.5 / 3.6:
+If you are using [Anaconda](https://www.anaconda.com/), install the `cbor`
+library for Python 3.5 / 3.6:
 ```
 conda install -c laura-dietz cbor=1.0.0 
 ```
