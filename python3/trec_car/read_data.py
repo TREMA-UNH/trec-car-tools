@@ -4,15 +4,32 @@
 from __future__ import print_function
 import cbor
 import itertools
+import typing
+
+PageId = str
+PageName = str
 
 class Page(object):
     """
     The name and skeleton of a Wikipedia page.
 
-    Attributes:
-      page_name    The name of the page (str)
-      skeleton     Its structure (a list of PageSkeletons)
-      page_meta     MetaData for page
+    .. attribute:: page_name
+
+       :rtype: PageName
+
+       The name of the page.
+
+    .. attribute:: skeleton
+
+       :rtype: typing.List[PageSkeleton]
+
+       The contents of the page
+
+    .. attribute:: page_meta
+
+       :rtype: PageMetadata
+
+       Metadata about the page
     """
     def __init__(self, page_name, page_id, skeleton, page_meta):
         self.page_name = page_name
@@ -21,12 +38,15 @@ class Page(object):
         self.child_sections = [child for child in self.skeleton if isinstance(child, Section)]
         self.page_meta = page_meta
 
-
     def deep_headings_list(self):
         return [child.nested_headings() for child in self.child_sections]
 
     def flat_headings_list(self):
+        """
+        Returns a flat list of headings contained by the :class:`Page`.
 
+        :rtype: typing.List[Section]
+        """
         def flatten(prefix, headings):
             for section, children in headings:
                 new_prefix = prefix + [section]
@@ -37,8 +57,6 @@ class Page(object):
 
         deep_headings = self.deep_headings_list()
         return list(flatten([], deep_headings))
-
-
 
     @staticmethod
     def from_cbor(cbor):
@@ -52,29 +70,35 @@ class Page(object):
         else:
             return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.from_cbor(cbor[4]))
 
-
     def __str__(self):
         return "Page(%s)" % self.page_name
 
     def to_string(self):
+        """
+        Render a string representation of the page.
+
+        :rtype: str
+        """
         return self.page_name + self.page_meta +\
                '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' + '\n'.join(str(s) for s in self.skeleton)
 
     def nested_headings(self):
-        '''Each heading recursively represented by a pair of (heading, list_of_children) '''
+        """
+        Each heading recursively represented by a pair of ``(heading,
+        list_of_child_sections)``.
+
+        :rtype: typing.List[typing.Tuple[Section, typing.List[Section]]]
+        """
         result = [child.nested_headings() for child in self.child_sections]
         return result
 
     def outline(self):
         return self.child_sections
 
-# data PageType = ArticlePage
-# | CategoryPage
-# | DisambiguationPage
-# | RedirectPage PageId
-#
-
 class PageType(object):
+    """
+    An abstract base class representing the various types of pages.
+    """
     @staticmethod
     def from_cbor(cbor):
         typetag = cbor[0]
@@ -89,6 +113,7 @@ class PageType(object):
             assert(False)
 
 class ArticlePage(PageType):
+    ''
     def __init__(self):
         pass
     def __str__(self): return "ArticlePage"
@@ -104,15 +129,64 @@ class DisambiguationPage(PageType):
     def __str__(self): return "Disambiguation Page"
 
 class RedirectPage(PageType):
+    """
+    .. attribute:: targetPage
+
+       :rtype: PageId
+
+       The target of the redirect.
+    """
     def __init__(self, targetPage):
         self.targetPage = targetPage
     def __str__(self):
         return "RedirectPage " + self.targetPage
 
-
-
 class PageMetadata(object):
-    """Meta data for a page"""
+    """
+    Meta data for a page
+
+    .. attribute:: pageType
+
+        :rtype: PageType
+
+        What kind of page is this?
+
+    .. attribute:: redirectNames
+
+        :rtype: PageName
+
+        Names of pages which redirect to this page
+
+    .. attribute:: disambiguationNames
+
+        :rtype: PageName
+
+        Names of disambiguation pages which link to this page
+
+    .. attribute:: disambiguationId
+
+        :rtype: PageId
+
+        Page IDs of disambiguation pages which link to this page
+
+    .. attribute:: categoryNames
+
+        :rtype: str
+
+        Page names of categories to which this page belongs
+
+    .. attribute:: categoryIds
+
+        :rtype: str
+
+        Page IDs of categories to which this page belongs
+
+    .. attribute:: inlinkIds
+
+        :rtype: str
+
+        Page IDs of pages containing inlinks
+    """
     def __init__(self, pageType, redirectNames,disambiguationNames,disambiguationIds,  categoryNames, categoryIds, inlinkIds):
         self.inlinkIds = inlinkIds
         self.categoryIds = categoryIds
@@ -158,7 +232,14 @@ class PageMetadata(object):
         return PageMetadata(pageType, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds)
 
 class PageSkeleton(object):
-    """ A minimal representation of the structure of a Wikipedia page. """
+    """
+    An abstract superclass for the various types of page elements. Subclasses include:
+
+    * :class:`Section`
+    * :class:`Para`
+    * :class:`Image`
+
+    """
     @staticmethod
     def from_cbor(cbor):
         tag = cbor[0]
@@ -179,15 +260,21 @@ class PageSkeleton(object):
         else:
             assert(False)
 
-
-
 class Section(PageSkeleton):
     """
     A section of a Wikipedia page.
 
-    Attributes:
-      title       The heading of a section (str)
-      children    The PageSkeleton elements contained by the section
+    .. attribute:: title
+
+       :rtype: str
+
+       The section heading.
+
+    .. attribute:: children
+
+       :rtype: typing.List[PageSkeleton]
+
+       The :class:`PageSkeleton` elements contained by the section.
     """
     def __init__(self, heading, headingId, children):
         self.heading = heading
@@ -210,8 +297,11 @@ class Para(PageSkeleton):
     """
     A paragraph within a Wikipedia page.
 
-    Attributes:
-      paragraph    The content of the Paragraph (which in turn contain a list of ParaBodys)
+    .. attribute:: paragraph
+
+       :rtype: Paragraph
+
+       The content of the Paragraph (which in turn contain a list of :class:`ParaBody`\ s)
     """
     def __init__(self, paragraph):
         self.paragraph = paragraph
@@ -224,9 +314,18 @@ class Image(PageSkeleton):
     """
     An image within a Wikipedia page.
 
-    Attributes:
-      caption    PageSkeleton representing the caption of the image
-      imageurl  URL to the image; spaces need to be replaced with underscores, Wikicommons namespace needs to be prefixed
+    .. attribute:: caption
+
+       :rtype: str
+
+       PageSkeleton representing the caption of the image
+
+    .. attribute:: imageurl
+
+       :rtype: str
+
+       URL to the image; spaces need to be replaced with underscores, Wikimedia
+       Commons namespace needs to be prefixed
     """
     def __init__(self, imageurl, caption):
         self.caption = caption
@@ -235,14 +334,19 @@ class Image(PageSkeleton):
     def __str__(self, level=None):
         return str("!["+self.imageurl+"]. Caption: "+(''.join([str(skel) for skel in self.caption])))
 
-
 class List(PageSkeleton):
     """
     An list element within a Wikipedia page.
 
-    Attributes:
-      level     The list nesting level
-      body      A Paragraph containing the element body.
+    .. attribute:: level
+
+       :rtype: int
+
+       The list nesting level
+
+    .. attribute::  body
+
+       A :class:`Paragraph` containing the list element contents.
     """
     def __init__(self, level, body):
         self.level = level
@@ -250,7 +354,6 @@ class List(PageSkeleton):
 
     def __str__(self, level=None):
         return str("*" * self.level + " " + str(self.body) + '\n')
-
 
 class Paragraph(object):
     """
@@ -267,15 +370,19 @@ class Paragraph(object):
         return Paragraph(paragraphId, map(ParaBody.from_cbor, cbor[2]))
 
     def get_text(self):
-        return ''.join([body.get_text() for body in self.bodies])
+        """
+        Get all of the contained text.
 
+        :rtype: str
+        """
+        return ''.join([body.get_text() for body in self.bodies])
 
     def __str__(self, level=None):
         return ''.join(str(body) for body in self.bodies)
 
 class ParaBody(object):
     """
-    A bit of content of a paragraph (either plain text or a link)
+    An abstract superclass representing a bit of :class:`Paragraph` content.
     """
     @staticmethod
     def from_cbor(cbor):
@@ -293,13 +400,23 @@ class ParaBody(object):
             assert(False)
 
 
+    def get_text(self):
+        """
+        Get all of the text within a :class:`ParaBody`.
+
+        :rtype: str
+        """
+        raise UnimplementedError
 
 class ParaText(ParaBody):
     """
     A bit of plain text from a paragraph.
 
-    Attributes:
-      text      The text
+    .. attribute:: text
+
+       :rtype: str
+
+       The text
     """
     def __init__(self, text):
         self.text = text
@@ -314,11 +431,30 @@ class ParaLink(ParaBody):
     """
     A link within a paragraph.
 
-    Attributes:
-      page          The page name of the link target
-      pageid        The link target as trec-car identifer
-      link_section  Reference to section, or None  (the part after the '#' the a URL)
-      anchor_text   The anchor text of the link
+    .. attribute:: page
+
+       :rtype: PageName
+
+       The page name of the link target
+
+    .. attribute:: pageid
+
+       :rtype: PageId
+
+       The link target as trec-car identifer
+
+    .. attribute:: link_section
+
+       :rtype: str
+
+       Section anchor of link target (i.e. the part after the ``#`` in the
+       URL), or ``None``.
+
+    .. attribute:: anchor_text
+
+       :rtype: str
+
+       The anchor text of the link
     """
     def __init__(self, page, link_section, pageid, anchor_text):
         self.page = page
@@ -328,7 +464,6 @@ class ParaLink(ParaBody):
 
     def get_text(self):
         return self.anchor_text
-
 
     def __str__(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)
@@ -357,9 +492,21 @@ def _iter_with_header(file, parse, expected_file_type):
             break
 
 def iter_annotations(file):
+    """
+    Iterate over the :class:`Page`\ s of an annotations file.
+
+    :type file: typing.TextIO
+    :rtype: typing.Iterator[Page]
+    """
     return _iter_with_header(file, Page.from_cbor, 0)
 
 def iter_paragraphs(file):
+    """
+    Iterate over the :class:`Paragraph`\ s of an paragraphs file.
+
+    :type file: typing.TextIO
+    :rtype: typing.Iterator[Paragraph]
+    """
     return _iter_with_header(file, Paragraph.from_cbor, 2)
 
 def dump_annotations(file):

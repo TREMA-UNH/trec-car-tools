@@ -10,5 +10,5 @@ setup(
     author='laura-dietz',
     author_email='Laura.Dietz@unh.edu',
     description='Support tools for TREC CAR participants',
-    install_requires=['cbor>=0.1.4'],
+    install_requires=['cbor>=0.1.4', 'typing'],
 )
