@@ -14,8 +14,15 @@ Reading the dataset
 Basic types
 -----------
 
-.. autoclass:: trec_car.read_data.PageId
-.. autoclass:: trec_car.read_data.PageName
+.. class:: trec_car.read_data.PageName
+
+   :class:`PageName` represents the natural language "name" of a page. Note that
+   this means that it is not necessarily unique. If you need a unique handle for
+   a page use :class:`PageId`.
+
+.. class:: trec_car.read_data.PageId
+
+   A :class:`PageId` is the unique identifier for a :class:`Page`.
 
 The :class:`Page` type
 ----------------------
