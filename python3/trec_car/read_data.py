@@ -74,6 +74,11 @@ class Page(object):
         return "Page(%s)" % self.page_name
 
     def to_string(self):
+        """
+        Render a string representation of the page.
+
+        :rtype: str
+        """
         return self.page_name + self.page_meta +\
                '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' + '\n'.join(str(s) for s in self.skeleton)
 
@@ -365,8 +370,12 @@ class Paragraph(object):
         return Paragraph(paragraphId, map(ParaBody.from_cbor, cbor[2]))
 
     def get_text(self):
-        return ''.join([body.get_text() for body in self.bodies])
+        """
+        Get all of the contained text.
 
+        :rtype: str
+        """
+        return ''.join([body.get_text() for body in self.bodies])
 
     def __str__(self, level=None):
         return ''.join(str(body) for body in self.bodies)
@@ -389,6 +398,15 @@ class ParaBody(object):
             return ParaLink(cbor_[1], linkSection, linkTargetId, cbor_[4])
         else:
             assert(False)
+
+
+    def get_text(self):
+        """
+        Get all of the text within a :class:`ParaBody`.
+
+        :rtype: str
+        """
+        raise UnimplementedError
 
 class ParaText(ParaBody):
     """
@@ -446,7 +464,6 @@ class ParaLink(ParaBody):
 
     def get_text(self):
         return self.anchor_text
-
 
     def __str__(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)
