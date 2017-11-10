@@ -6,25 +6,25 @@ Data release support for v1.2.
 
 Current support for
 - Python 3.5, 3.6
-- (Soon to come) Java 1.7
+- Java 1.7
 
 If you are using anaconda, install the cbor library for python 3.5 / 3.6:
-    conda install -c laura-dietz cbor=1.0.0 
-
-
+```
+conda install -c laura-dietz cbor=1.0.0 
+```
 
 ## How to use these tools?
 
-Step 1: Get the data from [http://trec-car.cs.unh.edu](http://trec-car.cs.unh.edu)
-Step 2: Clone this repository
-Step 3: Look out for test.py and test.java files as examples for how to access the data.
+1. Get the data from [http://trec-car.cs.unh.edu](http://trec-car.cs.unh.edu)
+2. Clone this repository
+3. Look out for test.py and test.java files as examples for how to access the data.
 
 ## Tool support
 
 This package provides support for the following activities.
 
-- read_data:  Reading the provided paragraph collection, outline collections, and training articles
-- format_runs: writing submission files
+- `read_data`:  Reading the provided paragraph collection, outline collections, and training articles
+- `format_runs`: writing submission files
 
 
 ## Reading Data
@@ -46,7 +46,7 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
      ParaLink     -> $targetPage $targetPageId $linkSection $anchorText
 ~~~~~
 
-You can use any CBOR serialization library. Below a convenience library for reading the data into python (3.5)
+You can use any CBOR serialization library. Below a convenience library for reading the data into Python (3.5)
 
 - `./read_data/trec_car_read_data.py` 
 Python 3.5 convenience library for reading the input data (in CBOR format).
