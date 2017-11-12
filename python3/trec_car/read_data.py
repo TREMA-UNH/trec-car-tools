@@ -345,6 +345,9 @@ class Image(PageSkeleton):
     def __str__(self, level=None):
         return str("!["+self.imageurl+"]. Caption: "+(''.join([str(skel) for skel in self.caption])))
 
+    def get_text(self):
+        return '\n'.join(skel.get_text() for skel in self.caption)
+
 class List(PageSkeleton):
     """
     An list element within a Wikipedia page.
@@ -365,6 +368,9 @@ class List(PageSkeleton):
 
     def __str__(self, level=None):
         return str("*" * self.level + " " + str(self.body) + '\n')
+
+    def get_text(self):
+        return self.body.get_text()
 
 class Paragraph(object):
     """
