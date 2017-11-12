@@ -5,6 +5,7 @@ import argparse
 
 def dump_pages(args):
     for p in iter_annotations(args.file):
+        print(p.page_meta)
         print(p)
 
 def dump_paragraphs(args):
