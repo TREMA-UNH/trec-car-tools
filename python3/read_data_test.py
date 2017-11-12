@@ -13,18 +13,22 @@ paragraphs=sys.argv[3]
 with open(articles, 'rb') as f:
     for p in iter_annotations(f):
         print('\npagename:', p.page_name)
+        print('\npageid:', p.page_id)
+        print('\nmeta:', p.page_meta)
 
         # get one data structure with nested (heading, [children]) pairs
         headings = p.nested_headings()
-        print(headings)
+        #print(headings)
 
         if len(p.outline())>0:
-            print('heading 1=', p.outline()[0])
+            print('heading 1=', p.outline()[0].__str__())
 
             print('deep headings= ', [ (section.heading, len(children)) for (section, children) in p.deep_headings_list()])
 
             print('flat headings= ' ,["/".join([section.heading for section in sectionpath]) for sectionpath in p.flat_headings_list()])
 
+
+exit(0)
 
 with open(outlines, 'rb') as f:
     for p in iter_annotations(f):

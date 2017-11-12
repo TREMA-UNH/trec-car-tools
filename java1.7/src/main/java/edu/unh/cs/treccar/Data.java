@@ -32,13 +32,51 @@ public class Data {
     }
 
 
+    public static enum PageType {
+        Article(0), Category(1), Disambiguation(2), Redirect(3);
+
+        private int value;
+        private PageType(int value) {
+            this.value = value;
+        }
+
+        private static PageType[] values = null;
+        public static PageType fromInt(int i) {
+            if (PageType.values == null) {
+                PageType.values = PageType.values();
+            }
+            return PageType.values[i];
+        }
+    }
+
+    public final static class PageMetadata {
+        private final PageType pageType;
+        private final ArrayList<String> redirectNames;
+        private final ArrayList<String> disambiguationNames;
+        private final ArrayList<String> disambiguationIds;
+        private final ArrayList<String> categoryNames;
+        private final ArrayList<String> categoryIds;
+        private final ArrayList<String> inlinkIds;
+
+        public PageMetadata(PageType pageType, ArrayList<String> redirectNames, ArrayList<String> disambiguationNames, ArrayList<String> disambiguationIds, ArrayList<String> categoryNames, ArrayList<String> categoryIds, ArrayList<String> inlinkIds) {
+            this.pageType = pageType;
+            this.redirectNames = redirectNames;
+            this.disambiguationNames = disambiguationNames;
+            this.disambiguationIds = disambiguationIds;
+            this.categoryNames = categoryNames;
+            this.categoryIds = categoryIds;
+            this.inlinkIds = inlinkIds;
+        }
+    }
+
     public final static class Page {
         private final String pageName;
         private final String pageId;
         private final List<PageSkeleton> skeleton;
         private final ArrayList<Section> childSections;
+        private final PageMetadata pageMetadata;
 
-        public Page(String pageName, String pageId, List<PageSkeleton> skeleton) {
+        public Page(String pageName, String pageId, List<PageSkeleton> skeleton, PageMetadata pageMetadata) {
             this.pageName = pageName;
             this.pageId = pageId;
             this.skeleton = skeleton;
@@ -46,7 +84,7 @@ public class Data {
             for(PageSkeleton skel : skeleton) {
                 if (skel instanceof Section) childSections.add((Section) skel);
             }
-
+            this.pageMetadata = pageMetadata;
         }
 
         public String getPageName() {
@@ -63,6 +101,10 @@ public class Data {
 
         public ArrayList<Section> getChildSections() {
             return childSections;
+        }
+
+        public PageMetadata getPageMetadata() {
+            return pageMetadata;
         }
 
         private static List<List<Section>> flatSectionPaths_(List<Section> prefix, List<Section> headings) {
@@ -173,6 +215,7 @@ public class Data {
         public String toString() {
             return "Page{" +
                     "pageName='" + pageName + '\'' +
+                    ", pageMetadata=" + pageMetadata +
                     ", skeleton=" + skeleton +
                     '}';
         }
@@ -196,7 +239,7 @@ public class Data {
         }
     }
 
-    public final static class Section implements PageSkeleton{
+    public final static class Section implements PageSkeleton {
         private final String heading;
         private final String headingId;
         private final List<PageSkeleton> children;
@@ -294,6 +337,94 @@ public class Data {
         }
     }
 
+
+    public final static class Image implements PageSkeleton {
+        private final String imageUrl;
+        private final List<PageSkeleton> captionSkel;
+
+        public Image(String paraId, List<PageSkeleton> caption) {
+            this.imageUrl= paraId;
+            this.captionSkel = caption;
+        }
+
+        public String getImageUrl() {
+            return imageUrl;
+        }
+
+        public List<PageSkeleton> getCaptionSkel() {
+            return captionSkel;
+        }
+
+        @Override
+        public String toString() {
+            return "Image{" +
+                    "imageUrl='" + imageUrl + '\'' +
+                    ", caption=" + captionSkel +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Image)) return false;
+
+            Image image = (Image) o;
+
+            if (getImageUrl() != null ? !getImageUrl().equals(image.getImageUrl()) : image.getImageUrl() != null)
+                return false;
+            return getCaptionSkel() != null ? getCaptionSkel().equals(image.getCaptionSkel()) : image.getCaptionSkel() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getImageUrl() != null ? getImageUrl().hashCode() : 0;
+            result = 31 * result + (getCaptionSkel() != null ? getCaptionSkel().hashCode() : 0);
+            return result;
+        }
+    }
+
+    public final static class ListItem implements PageSkeleton {
+        private final int nestingLevel;
+        private final Paragraph bodyParagraph;
+
+        public ListItem(int nestingLevel, Paragraph bodyParagraph) {
+            this.nestingLevel = nestingLevel;
+            this.bodyParagraph = bodyParagraph;
+        }
+
+        public int getNestingLevel() {
+            return nestingLevel;
+        }
+
+        public Paragraph getBodyParagraph() {
+            return bodyParagraph;
+        }
+
+        @Override
+        public String toString() {
+            return "* " + bodyParagraph.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ListItem)) return false;
+
+            ListItem listItem = (ListItem) o;
+
+            if (getNestingLevel() != listItem.getNestingLevel()) return false;
+            return getBodyParagraph() != null ? getBodyParagraph().equals(listItem.getBodyParagraph()) : listItem.getBodyParagraph() == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getNestingLevel();
+            result = 31 * result + (getBodyParagraph() != null ? getBodyParagraph().hashCode() : 0);
+            return result;
+        }
+    }
+
+
     public final static class Paragraph  {
         private final String paraId;
         private final List<ParaBody> bodies;
@@ -315,7 +446,7 @@ public class Data {
         public String toString() {
             return "Paragraph{" +
                     "paraId='" + paraId + '\'' +
-                    ", bodies=" + bodies +
+                    ", captionSkel=" + bodies +
                     '}';
         }
 
@@ -400,7 +531,7 @@ public class Data {
         private final String anchorText;
         private final String page;
 
-        public ParaLink(String pageId, String anchorText, String page) {
+        public ParaLink(String page, String pageId, String anchorText) {
             this.pageId = pageId;
             this.anchorText = anchorText;
             this.page = page;
