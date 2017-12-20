@@ -1,4 +1,4 @@
-package edu.unh.cs.treccar;
+package edu.unh.cs.treccar_v2;
 
 import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
@@ -50,22 +50,73 @@ public class Data {
     }
 
     public final static class PageMetadata {
-        private final PageType pageType;
         private final ArrayList<String> redirectNames;
         private final ArrayList<String> disambiguationNames;
         private final ArrayList<String> disambiguationIds;
         private final ArrayList<String> categoryNames;
         private final ArrayList<String> categoryIds;
         private final ArrayList<String> inlinkIds;
+        private final ArrayList<String> inlinkAnchors;
 
-        public PageMetadata(PageType pageType, ArrayList<String> redirectNames, ArrayList<String> disambiguationNames, ArrayList<String> disambiguationIds, ArrayList<String> categoryNames, ArrayList<String> categoryIds, ArrayList<String> inlinkIds) {
-            this.pageType = pageType;
+        public PageMetadata(ArrayList<String> redirectNames, ArrayList<String> disambiguationNames, ArrayList<String> disambiguationIds, ArrayList<String> categoryNames, ArrayList<String> categoryIds, ArrayList<String> inlinkIds, ArrayList<String> inlinkAnchors) {
             this.redirectNames = redirectNames;
             this.disambiguationNames = disambiguationNames;
             this.disambiguationIds = disambiguationIds;
             this.categoryNames = categoryNames;
             this.categoryIds = categoryIds;
             this.inlinkIds = inlinkIds;
+            this.inlinkAnchors = inlinkAnchors;
+        }
+
+        public PageMetadata() {
+            this.redirectNames = new ArrayList<>();
+            this.disambiguationNames = new ArrayList<>();
+            this.disambiguationIds = new ArrayList<>();
+            this.categoryNames = new ArrayList<>();
+            this.categoryIds = new ArrayList<>();
+            this.inlinkIds = new ArrayList<>();
+            this.inlinkAnchors = new ArrayList<>();
+        }
+
+        public ArrayList<String> getRedirectNames() {
+            return redirectNames;
+        }
+
+        public ArrayList<String> getDisambiguationNames() {
+            return disambiguationNames;
+        }
+
+        public ArrayList<String> getDisambiguationIds() {
+            return disambiguationIds;
+        }
+
+        public ArrayList<String> getCategoryNames() {
+            return categoryNames;
+        }
+
+        public ArrayList<String> getCategoryIds() {
+            return categoryIds;
+        }
+
+        public ArrayList<String> getInlinkIds() {
+            return inlinkIds;
+        }
+
+        public ArrayList<String> getInlinkAnchors() {
+            return inlinkAnchors;
+        }
+
+        @Override
+        public String toString() {
+            return "PageMetadata{" +
+                    "redirectNames=" + redirectNames +
+                    "\n, disambiguationNames=" + disambiguationNames +
+                    "\n, disambiguationIds=" + disambiguationIds +
+                    "\n, categoryNames=" + categoryNames +
+                    "\n, categoryIds=" + categoryIds +
+                    "\n, inlinkIds=" + inlinkIds +
+                    "\n, inlinkAnchors=" + inlinkAnchors +
+                    '}';
         }
     }
 
@@ -73,13 +124,15 @@ public class Data {
         private final String pageName;
         private final String pageId;
         private final List<PageSkeleton> skeleton;
+        private final PageType pageType;
         private final ArrayList<Section> childSections;
         private final PageMetadata pageMetadata;
 
-        public Page(String pageName, String pageId, List<PageSkeleton> skeleton, PageMetadata pageMetadata) {
+        public Page(String pageName, String pageId, List<PageSkeleton> skeleton, PageType pageType, PageMetadata pageMetadata) {
             this.pageName = pageName;
             this.pageId = pageId;
             this.skeleton = skeleton;
+            this.pageType = pageType;
             this.childSections = new ArrayList<Section>();
             for(PageSkeleton skel : skeleton) {
                 if (skel instanceof Section) childSections.add((Section) skel);
@@ -102,6 +155,8 @@ public class Data {
         public ArrayList<Section> getChildSections() {
             return childSections;
         }
+
+        public PageType getPageType() {  return pageType; }
 
         public PageMetadata getPageMetadata() {
             return pageMetadata;
@@ -215,8 +270,8 @@ public class Data {
         public String toString() {
             return "Page{" +
                     "pageName='" + pageName + '\'' +
-                    ", pageMetadata=" + pageMetadata +
-                    ", skeleton=" + skeleton +
+                    "\n, pageMetadata=" + pageMetadata +
+                    "\n, skeleton=" + skeleton +
                     '}';
         }
 

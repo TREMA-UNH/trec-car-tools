@@ -1,8 +1,8 @@
-package edu.unh.cs.treccar.playground;
+package edu.unh.cs.treccar_v2.playground;
 
 import co.nstant.in.cbor.CborException;
-import edu.unh.cs.treccar.Data;
-import edu.unh.cs.treccar.read_data.DeserializeData;
+import edu.unh.cs.treccar_v2.Data;
+import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +37,19 @@ public class ExtractPlainText {
             for(Data.ParaBody body: paragraph.getBodies()){
                if(body instanceof Data.ParaLink) text += ((Data.ParaLink)body).getAnchorText();
                if(body instanceof Data.ParaText) text += ((Data.ParaText)body).getText();
+            }
+            if(text.length()>10) {
+                return Collections.singletonList(query + " " + text);
+            } else return Collections.emptyList();
+        } else if (skel instanceof Data.Image) {
+            return Collections.singletonList("");
+        } else if (skel instanceof Data.ListItem) {
+            final Data.Paragraph paragraph = ((Data.ListItem) skel).getBodyParagraph();
+
+            String text = "";
+            for(Data.ParaBody body: paragraph.getBodies()){
+                if(body instanceof Data.ParaLink) text += ((Data.ParaLink)body).getAnchorText();
+                if(body instanceof Data.ParaText) text += ((Data.ParaText)body).getText();
             }
             if(text.length()>10) {
                 return Collections.singletonList(query + " " + text);

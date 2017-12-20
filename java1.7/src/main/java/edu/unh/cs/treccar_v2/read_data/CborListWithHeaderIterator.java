@@ -1,14 +1,10 @@
-package edu.unh.cs.treccar.read_data;
+package edu.unh.cs.treccar_v2.read_data;
 
 import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.*;
 
 import java.util.Iterator;
-
-import edu.unh.cs.treccar.read_data.TrecCarHeader;
-import edu.unh.cs.treccar.read_data.CborRuntimeException;
-import edu.unh.cs.treccar.read_data.CborDataItemIterator;
 
 public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
     CborDataItemIterator listIter;

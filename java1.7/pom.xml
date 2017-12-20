@@ -6,7 +6,7 @@
 
     <groupId>edu.unh.cs.treccar</groupId>
     <artifactId>treccar-tools</artifactId>
-    <version>1.4</version>
+    <version>2.0</version>
 
     <dependencies>
         <dependency>
@@ -33,7 +33,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>edu.unh.cs.treccar.read_data.ReadDataTest</mainClass>
+                            <mainClass>edu.unh.cs.treccar_v2.read_data.ReadDataTest</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
