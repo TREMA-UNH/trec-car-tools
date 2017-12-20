@@ -31,7 +31,7 @@ public class ReadDataTest {
                 System.out.println(page);
                 System.out.println();
             }
-        } else if (mode.equals("page-sections")) {
+        } else if (mode.equals("outlines")) {
             final String pagesFile = args[1];
             final FileInputStream fileInputStream3 = new FileInputStream(new File(pagesFile));
             for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream3)) {
