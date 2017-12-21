@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.unh.cs.treccar</groupId>
-    <artifactId>treccar-tools</artifactId>
+    <artifactId>treccar-tools-v2</artifactId>
     <version>2.0</version>
 
     <dependencies>
