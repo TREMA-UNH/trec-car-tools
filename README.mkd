@@ -2,7 +2,10 @@
 
 Development tools for participants of the TREC Complex Answer Retrieval track.
 
-Data release support for v1.2.
+Data release support for v2.0.
+
+Note that in order to allow to compile your project for two trec-car format versions, the maven artifact Id was changed to `treccar-tools-v2` with version 2.0, and the package path changed to `treccar_v2` 
+
 
 Current support for
 - Python 3.5, 3.6
@@ -35,11 +38,22 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
 
 
 ~~~~~
-     Page         -> $pageName [PageSkeleton]
-     PageSkeleton -> Section | Para | Image
+     Page         -> $pageName $pageId [PageSkeleton] PageType PageMetadata
+     PageType     -> ArticlePage | CategoryPage | RedirectPage ParaLink | DisambiguationPage
+     PageMetadata -> RedirectNames DisambiguationNames DisambiguationIds CategoryNames CategoryIds InlinkIds InlinkAnchors
+     RedirectNames       -> [$pageName] 
+     DisambiguationNames -> [$pageName] 
+     DisambiguationIds   -> [$pageId] 
+     CategoryNames       -> [$pageName] 
+     CategoryIds         -> [$pageId] 
+     InlinkIds           -> [$pageId] 
+     InlinkAnchors       -> [$anchorText] 
+     
+     PageSkeleton -> Section | Para | Image | ListItem
      Section      -> $sectionHeading [PageSkeleton]
      Para         -> Paragraph
      Paragraph    -> $paragraphId, [ParaBody]
+     ListItem     -> $nestingLevel, Paragraph
      Image        -> $imageURL [PageSkeleton]
      ParaBody     -> ParaText | ParaLink
      ParaText     -> $text
