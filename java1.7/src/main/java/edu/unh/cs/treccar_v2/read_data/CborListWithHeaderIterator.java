@@ -54,4 +54,9 @@ public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
     }
 
     protected abstract T parseItem(DataItem dataItem);
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException("Read-only iterator.");
+    }
 }

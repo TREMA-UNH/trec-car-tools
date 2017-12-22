@@ -38,7 +38,7 @@ public class DeserializeData {
 
 
     /**
-     * @return null if no valid object can be located at the byte offset
+     * @return null if no valid object can be located at the byte offsset
      */
     private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws CborRuntimeException, IOException {
         inputStream.skip(offset);
@@ -84,7 +84,7 @@ public class DeserializeData {
     }
 
     private static ArrayList<String> getUnicodeArray(List<DataItem> resultArray) {
-        ArrayList<String> result = new ArrayList(resultArray.size());
+        ArrayList<String> result = new ArrayList<String>(resultArray.size());
         for (DataItem item: resultArray) {
             if (Special.BREAK.equals(item)) {
                 break;
@@ -110,7 +110,7 @@ public class DeserializeData {
     }
 
     private static ArrayList<String> getByteArray(List<DataItem> resultArray) {
-        ArrayList<String> result = new ArrayList(resultArray.size());
+        ArrayList<String> result = new ArrayList<String>(resultArray.size());
         for (DataItem item: resultArray) {
             if (Special.BREAK.equals(item)) {
                 break;
@@ -177,17 +177,6 @@ public class DeserializeData {
         }
 
         return pageMetadata;
-
-//
-//        assert(array.get(0).getTag().getValue() == 0L);
-//        ArrayList<String> redirectNames = getMaybeListText(array.get(2));
-//        ArrayList<String> disambiguationNames = getMaybeListText(array.get(3));
-//        ArrayList<String> disambiguationIds = getMaybeListPageIds(array.get(4));
-//        ArrayList<String> categoryNames = getMaybeListText(array.get(5));
-//        ArrayList<String> categoryIds = getMaybeListPageIds(array.get(6));
-//        ArrayList<String> inlinkIds = getMaybeListPageIds(array.get(7));
-//        return new Data.PageMetadata(pageType, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds);
-//    }
     }
 
     public static Data.Page pageFromCbor(DataItem dataItem) {
