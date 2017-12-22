@@ -5,12 +5,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
+/*
  * User: dietz
  * Date: 12/10/16
  * Time: 11:55 AM
  */
+
+
+/**
+ * Representation of TREC CAR's Wikipedia dump.
+ */
 public class Data {
+    /**
+     * Get a section path ID
+     * @param sections list of sections, each represented by their heading #getHeadingId  -- not displayed text.
+     */
     public static String sectionPathId(String pageId, List<Section> sections){
         List<String> result = new ArrayList<>();
         result.add(pageId);
@@ -20,6 +29,10 @@ public class Data {
         return StringUtils.join(result, "/");
     }
 
+    /**
+     * Get a section path ID
+     * @param sections list of sections, each represented by their heading #getHeading  -- not id.
+     */
     public static List<String> sectionPathHeadings(List<Section> sections){
         List<String> result = new ArrayList<>();
         for(Section section:sections){
@@ -28,10 +41,10 @@ public class Data {
         return result;
     }
 
-    public static interface PageSkeleton {
-    }
 
-
+    /**
+     * Type of a page, namely Article, Category, Disambiguation, or Redirect
+     */
     public static enum PageType {
         Article(0), Category(1), Disambiguation(2), Redirect(3);
 
@@ -49,6 +62,9 @@ public class Data {
         }
     }
 
+    /**
+     * Page metadata containing information about categories, disambiguations, redirect names, and inlinks.
+     */
     public final static class PageMetadata {
         private final ArrayList<String> redirectNames;
         private final ArrayList<String> disambiguationNames;
@@ -78,30 +94,72 @@ public class Data {
             this.inlinkAnchors = new ArrayList<>();
         }
 
+        /**
+         * Names of redirect pages that point here.
+         *
+         * These can be interpreted as alternative references to the entity represented by this page.
+         * @return Array of names
+         *
+         */
         public ArrayList<String> getRedirectNames() {
             return redirectNames;
         }
 
+        /**
+         * Names of disambiguation pages that point here (see clarification below).
+         *
+         * These can be interpreted as ambiguous alternative references to the entity
+         * represented by this page. Ambiguous means that several other entities also go by this name.
+         *
+         * Wikipedia is inconsistent in their use of links on disambiguation pages. To avoid many false
+         * positives, only the first link in a list item is considered here.
+         *
+         * @return Array of names
+         *
+         */
         public ArrayList<String> getDisambiguationNames() {
             return disambiguationNames;
         }
 
+        /**
+         * As {@link #getDisambiguationNames()}, but returns list as TREC CAR page ids.
+         * @return list of page ids
+         */
         public ArrayList<String> getDisambiguationIds() {
             return disambiguationIds;
         }
 
+        /**
+         * Names of Categories this page is tagged with
+         *
+         * These can be interpreted as information on the entity type represented by this page.
+         * @return Array of names
+         *
+         */
         public ArrayList<String> getCategoryNames() {
             return categoryNames;
         }
 
+        /**
+         * Same as {@link #getCategoryNames()}, but returns list as TREC CAR page ids.
+         * @return list of page ids
+         */
         public ArrayList<String> getCategoryIds() {
             return categoryIds;
         }
 
+        /**
+         * Page Ids of article, disambiguation, and category pages that link here.
+         * @return list of page ids
+         */
         public ArrayList<String> getInlinkIds() {
             return inlinkIds;
         }
 
+        /**
+         * Anchor text of links on other pages that point here.
+         * @return list of String
+         */
         public ArrayList<String> getInlinkAnchors() {
             return inlinkAnchors;
         }
@@ -120,6 +178,18 @@ public class Data {
         }
     }
 
+
+
+    /**
+     * Shared interface of page elements
+     */
+    public static interface PageSkeleton {
+    }
+
+
+    /**
+     * Representation of a Page in the TREC CAR data set.
+     */
     public final static class Page {
         private final String pageName;
         private final String pageId;
@@ -140,26 +210,53 @@ public class Data {
             this.pageMetadata = pageMetadata;
         }
 
+        /**
+         * Page title (aka Page name) as human-readable string --- no underscores, but may
+         * contain diacritics and other UTF-8 characters.
+         * @return
+         */
         public String getPageName() {
             return pageName;
         }
 
+        /**
+         * The TREC CAR page id of this page, similar to {@link #getPageName()} but guaranteed to be an
+         * ASCII string without spaces or slashes.
+         *
+         * Don't try to parse the page name out of this string! Use {@link #getPageName()} instead.
+         */
         public String getPageId() {
             return pageId;
         }
 
+        /**
+         * The type of the page, e.g. Article, Category, Disambiguation, or Redirect.
+         * @return
+         */
+        public PageType getPageType() {  return pageType; }
+
+        /**
+         * Get metadata of this page, e.g., inlinks, category tags, etc.
+         * @return
+         */
+        public PageMetadata getPageMetadata() {
+            return pageMetadata;
+        }
+
+        /**
+         * Access the elements this page is composed off (sections, paragraphs, ...)
+         * @return
+         */
         public List<PageSkeleton> getSkeleton() {
             return skeleton;
         }
 
+        /**
+         * Get sections contained in this page. Similar to {@link #getSkeleton()}, but only contains sections.
+         * @return
+         */
         public ArrayList<Section> getChildSections() {
             return childSections;
-        }
-
-        public PageType getPageType() {  return pageType; }
-
-        public PageMetadata getPageMetadata() {
-            return pageMetadata;
         }
 
         private static List<List<Section>> flatSectionPaths_(List<Section> prefix, List<Section> headings) {
@@ -311,18 +408,32 @@ public class Data {
 
         }
 
+        /**
+         * The text heading of this section.
+         */
         public String getHeading() {
             return heading;
         }
 
+        /**
+         * Same as {@link #getHeading()} but provides an identifier that is guaranteed to be ASCII, without spaces or slashes.
+         * @return
+         */
         public String getHeadingId() {
             return headingId;
         }
 
+        /**
+         * Traverse child elements of this section, e.g. paragraphs, nested sections, etc.
+         */
         public List<PageSkeleton> getChildren() {
             return children;
         }
 
+        /**
+         * List nested sections.
+         * @return
+         */
         public List<Section> getChildSections() { return childSections; }
 
 
@@ -355,9 +466,15 @@ public class Data {
         }
     }
 
+    /**
+     * Shared interface of elements inside a paragraph.
+     */
     public static interface ParaBody {
     }
 
+    /**
+     * Page element containing a single paragraph.
+     */
     public final static class Para implements PageSkeleton {
         private final Paragraph paragraph;
 
@@ -393,6 +510,9 @@ public class Data {
     }
 
 
+    /**
+     * An image on the page.
+     */
     public final static class Image implements PageSkeleton {
         private final String imageUrl;
         private final List<PageSkeleton> captionSkel;
@@ -402,10 +522,18 @@ public class Data {
             this.captionSkel = caption;
         }
 
+        /**
+         * URL to the image on the internet
+         * @return
+         */
         public String getImageUrl() {
             return imageUrl;
         }
 
+        /**
+         * Access to caption.
+         * @return
+         */
         public List<PageSkeleton> getCaptionSkel() {
             return captionSkel;
         }
@@ -438,6 +566,11 @@ public class Data {
         }
     }
 
+    /**
+     * List entry on a page. There is no representation of a single list as a whole.
+     *
+     * Instead, there is one page element per list entry with a nesting level. This jigsaw puzzle is brought to you by Wikipedia.
+     */
     public final static class ListItem implements PageSkeleton {
         private final int nestingLevel;
         private final Paragraph bodyParagraph;
@@ -447,10 +580,18 @@ public class Data {
             this.bodyParagraph = bodyParagraph;
         }
 
+        /**
+         * Nesting level at which this list item was found.
+         * @return
+         */
         public int getNestingLevel() {
             return nestingLevel;
         }
 
+        /**
+         * Content of the list entry.
+         * @return
+         */
         public Paragraph getBodyParagraph() {
             return bodyParagraph;
         }
@@ -480,6 +621,9 @@ public class Data {
     }
 
 
+    /**
+     * A paragraph element.
+     */
     public final static class Paragraph  {
         private final String paraId;
         private final List<ParaBody> bodies;
@@ -489,10 +633,22 @@ public class Data {
             this.bodies = bodies;
         }
 
+        /**
+         * Unique id of the paragraph.
+         *
+         * Note that any paragraph with the same text, will get the same identifier.
+         * Therefore, it is likely that several pages will contain a paragraph with this identifier.
+         * This is because the unique identifier is based on the text content.
+         * @return
+         */
         public String getParaId() {
             return paraId;
         }
 
+        /**
+         * Content of the paragraph, as a list of text and links. (No further nesting)
+         * @return
+         */
         public List<ParaBody> getBodies() {
             return bodies;
         }
@@ -505,19 +661,29 @@ public class Data {
                     '}';
         }
 
+        /**
+         * Convenience accessor to just get the text of this paragraph (replacing links with their anchor text).
+         *
+         * For more control use {@link #getBodies()}.
+         */
         public String getTextOnly() {
-            String result = "";
+            StringBuilder result = new StringBuilder();
             for(ParaBody body: bodies){
                 if(body instanceof ParaLink){
-                    result += ((ParaLink) body).getAnchorText();
+                    result.append(((ParaLink) body).getAnchorText());
                 }
                 else if (body instanceof ParaText){
-                    result += ((ParaText)body).getText();
+                    result.append(((ParaText) body).getText());
                 }
             }
-            return result;
+            return result.toString();
         }
 
+        /**
+         * Convenience accessor to all  entities (as page names -- not IDs!) in this paragraph.
+         *
+         * For more control use {@link #getBodies()}.
+         */
         public List<String> getEntitiesOnly() {
             List<String> result = new ArrayList<>();
             for(ParaBody body: bodies){
@@ -545,7 +711,9 @@ public class Data {
     }
 
 
-
+    /**
+     * A text fragment in a paragraph.
+     */
     public final static class ParaText implements ParaBody {
         private final String text;
 
@@ -580,6 +748,14 @@ public class Data {
         }
     }
 
+    /**
+     * A hyper link inside a paragraph.
+     *
+     * The link is represented by {@link #getAnchorText()},
+     * the target page as name ({@link #getPage()}) and id ({@link #getPageId()}.
+     *
+     * In some cases links refer to sections inside pages. In this case the name of the section is provided in {@link #getLinkSection()} (which is otherwise `null`. Check with {@link #hasLinkSection()})
+     */
     public final static class ParaLink implements ParaBody {
         private final String linkSection;
         private final String pageId;

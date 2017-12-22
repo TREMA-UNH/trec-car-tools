@@ -13,6 +13,14 @@ import edu.unh.cs.treccar_v2.Data;
 
 public class DeserializeData {
 
+    // =========== Pages ===================
+
+    /**
+     * Iterator to read pages from the CBOR file.
+     * @param inputStream  file input stream of pages CBOR file
+     * @return Iterator over pages
+     * @throws CborRuntimeException
+     */
     public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborRuntimeException {
         class PageIterator extends CborListWithHeaderIterator<Data.Page> {
             public PageIterator(CborDecoder decoder) throws CborRuntimeException {
@@ -28,6 +36,12 @@ public class DeserializeData {
     }
 
 
+    /**
+     * Iteratable reading pages from the CBOR file.
+     * @param inputStream  file input stream of pages CBOR file
+     * @return Iterable over pages
+     * @throws CborRuntimeException
+     */
     public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborRuntimeException {
         return new Iterable<Data.Page>() {
             public Iterator<Data.Page> iterator() {
@@ -38,14 +52,32 @@ public class DeserializeData {
 
 
     /**
+     * Reads a page at a given byte offset in file input stream from a CBOR file.
+     *
+     * Use at your own risk!
+     *
+     * @param inputStream  file input stream of pages CBOR file
+     * @return Iterator over pages
+     * @param offset byteoffset into the stream. Note that if the offset is wrong, this will and return `null`.
+     * @throws CborRuntimeException
+     *
      * @return null if no valid object can be located at the byte offsset
      */
-    private static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws CborRuntimeException, IOException {
+    public static Data.Page annotationAtOffset(final InputStream inputStream, long offset) throws CborRuntimeException, IOException {
         inputStream.skip(offset);
         return iterAnnotations(inputStream).next();
     }
 
 
+
+    // =========== Paragraphs ===================
+
+    /**
+     * Iterator to read paragraphs from the CBOR file.
+     * @param inputStream  file input stream of pages CBOR file
+     * @return Iterator over paragraphs
+     * @throws CborRuntimeException
+     */
     public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborRuntimeException {
         class ParagraphIterator extends CborListWithHeaderIterator<Data.Paragraph> {
             ParagraphIterator(CborDecoder decoder) throws CborRuntimeException {
@@ -61,6 +93,12 @@ public class DeserializeData {
     }
 
 
+    /**
+     * Iterable to read paragraphs from the CBOR file.
+     * @param inputStream  file input stream of pages CBOR file
+     * @return Iterator over paragraphs
+     * @throws CborRuntimeException
+     */
     public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborRuntimeException {
         return new Iterable<Data.Paragraph>() {
             public Iterator<Data.Paragraph> iterator() {
@@ -70,18 +108,7 @@ public class DeserializeData {
     }
 
 
-    private static ArrayList<String> getMaybeListText(DataItem dataItem) {
-        List<DataItem> array = ((Array) dataItem).getDataItems();
-        if (array.size() == 0) {
-            return null;
-        } else if (array.size() == 1) {
-            List<DataItem> resultArray = ((Array) array.get(0)).getDataItems();
-            ArrayList<String> result = getUnicodeArray(resultArray);
-            return result;
-        } else {
-            throw new RuntimeException("Invalid Maybe [PageName]");
-        }
-    }
+    // ============ Data accessors ==================
 
     private static ArrayList<String> getUnicodeArray(List<DataItem> resultArray) {
         ArrayList<String> result = new ArrayList<String>(resultArray.size());
@@ -96,19 +123,6 @@ public class DeserializeData {
     }
 
 
-    private static ArrayList<String> getMaybeListPageIds(DataItem dataItem) {
-        List<DataItem> array = ((Array) dataItem).getDataItems();
-        if (array.size() == 0) {
-            return null;
-        } else if (array.size() == 1) {
-            List<DataItem> resultArray = ((Array) array.get(0)).getDataItems();
-            ArrayList<String> result = getByteArray(resultArray);
-            return result;
-        } else {
-            throw new RuntimeException("Invalid Maybe [PageId]");
-        }
-    }
-
     private static ArrayList<String> getByteArray(List<DataItem> resultArray) {
         ArrayList<String> result = new ArrayList<String>(resultArray.size());
         for (DataItem item: resultArray) {
@@ -121,7 +135,7 @@ public class DeserializeData {
         return result;
     }
 
-    public static Data.PageType pageTypeFromCbor(DataItem dataItem) {
+    private static Data.PageType pageTypeFromCbor(DataItem dataItem) {
 //        Data.PageType pageType = Data.PageType.fromInt(((UnsignedInteger) (((Array) dataItem).get(1)).getDataItems().get(0)).getValue().intValue());
         final DataItem tag = ((Array) dataItem).getDataItems().get(0);
         final int tagValue = ((UnsignedInteger) tag).getValue().intValue();
@@ -130,7 +144,7 @@ public class DeserializeData {
     }
 
     // page type 0: article, 1: category, 2: Disambiguation, 3: redirect (with link)
-    public static Data.PageMetadata pageMetadataFromCbor(DataItem dataItem) {
+    private static Data.PageMetadata pageMetadataFromCbor(DataItem dataItem) {
         List<DataItem> outerArray = ((Array) dataItem).getDataItems();
 
         final Data.PageMetadata pageMetadata = new Data.PageMetadata();
@@ -179,7 +193,7 @@ public class DeserializeData {
         return pageMetadata;
     }
 
-    public static Data.Page pageFromCbor(DataItem dataItem) {
+    private static Data.Page pageFromCbor(DataItem dataItem) {
         List<DataItem> array = ((Array) dataItem).getDataItems();
 
         assert(array.get(0).getTag().getValue() == 0L);
@@ -226,7 +240,7 @@ public class DeserializeData {
         return new Data.Para(paragraphFromCbor(dataItem));
     }
 
-    public static Data.Paragraph paragraphFromCbor(DataItem dataItem) {
+    private static Data.Paragraph paragraphFromCbor(DataItem dataItem) {
         List<DataItem> array = ((Array) dataItem).getDataItems();
         assert(array.get(0).getTag().getValue() == 0L);
 
