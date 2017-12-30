@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * User: dietz
@@ -721,6 +722,10 @@ public class Data {
             this.text = text;
         }
 
+        /**
+         * Get the text of this segment.
+         * @return
+         */
         public String getText() {
             return text;
         }
@@ -766,7 +771,7 @@ public class Data {
             this.pageId = pageId;
             this.anchorText = anchorText;
             this.page = page;
-            this.linkSection = null;
+            this.linkSection = "";
         }
 
         public ParaLink(String page, String pageId, String linkSection, String anchorText) {
@@ -776,23 +781,42 @@ public class Data {
             this.page = page;
         }
 
+        /**
+         * True if this link points to a section, if false points to a page.
+         * @return
+         */
         public boolean hasLinkSection(){
-            return this.linkSection != null;
+            return (this.linkSection != null) && (!Objects.equals(this.linkSection, ""));
         }
 
-        /** May return null if not defined. Check with #hasLinkSection*/
+        /**
+         * Section heading if the link points to a section.
+         * Will return null or "" if not defined. Check with {@link #hasLinkSection()}
+         */
         public String getLinkSection() {
             return linkSection;
         }
 
+        /**
+         * The page id of the link target.
+         * @return
+         */
         public String getPageId() {
             return pageId;
         }
 
+        /**
+         * Anchor text of the link
+         * @return
+         */
         public String getAnchorText() {
             return anchorText;
         }
 
+        /**
+         * Page name of the link target
+         * @return
+         */
         public String getPage() {
             return page;
         }
