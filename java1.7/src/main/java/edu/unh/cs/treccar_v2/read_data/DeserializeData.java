@@ -5,13 +5,37 @@ import co.nstant.in.cbor.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import edu.unh.cs.treccar_v2.Data;
+import edu.unh.cs.treccar_v2.Header;
 
 public class DeserializeData {
+    private static final List<String> SUPPORTED_RELEASES = Arrays.asList("trec-car v1.6", "trec-car v2.0");
+    private static final String SUPPORTED_RELEASES_STR =  SUPPORTED_RELEASES.get(0)+" or "+SUPPORTED_RELEASES.get(1);
+
+
+    private static void checkSupportedRelease(Header.TrecCarHeader header) {
+        final String dataReleaseName = header.getProvenance().getDataReleaseName();
+        if(!SUPPORTED_RELEASES.contains(dataReleaseName)) {
+            throw new CborFileTypeException("This method only supports releases  "+SUPPORTED_RELEASES_STR+", but input is of data release "+dataReleaseName+".");
+        }
+    }
+
+    private static void checkIsPagesOrOutlines(Header.TrecCarHeader header) {
+        final Header.FileType fileType = header.getFileType();
+        if(! Header.FileType.OutlinesFile.equals(fileType) && !Header.FileType.PagesFile.equals(fileType)){
+            throw new CborFileTypeException("This method only support "+Header.FileType.PagesFile+" or "+Header.FileType.OutlinesFile+", but input is of file type "+fileType+".");
+        }
+    }
+
+
+    private static void checkIsParagraphFile(Header.TrecCarHeader header) {
+        final Header.FileType fileType = header.getFileType();
+        if(! Header.FileType.ParagraphsFile.equals(fileType)){
+            throw new CborFileTypeException("This method only support "+Header.FileType.ParagraphsFile+", but input is of file type "+fileType+".");
+        }
+    }
 
     // =========== Pages ===================
 
@@ -21,7 +45,7 @@ public class DeserializeData {
      * @return Iterator over pages
      * @throws CborRuntimeException
      */
-    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborRuntimeException {
+    public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         class PageIterator extends CborListWithHeaderIterator<Data.Page> {
             public PageIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
@@ -32,7 +56,30 @@ public class DeserializeData {
         };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-        return new PageIterator(decode);
+        final PageIterator pageIterator = new PageIterator(decode);
+
+        final Header.TrecCarHeader header = pageIterator.getHeader();
+        checkIsPagesOrOutlines(header);
+        checkSupportedRelease(header);
+
+        return pageIterator;
+    }
+
+
+    public static Header.TrecCarHeader getTrecCarHeader(InputStream inputStream) throws Header.InvalidHeaderException {
+        class PageIterator extends CborListWithHeaderIterator<Data.Page> {
+            public PageIterator(CborDecoder decoder) throws CborRuntimeException {
+                super(decoder);
+            }
+            protected Data.Page parseItem(DataItem dataItem) {
+                return pageFromCbor(dataItem);
+            }
+        };
+
+        final CborDecoder decode = new CborDecoder(inputStream);
+        final Header.TrecCarHeader header = (new PageIterator(decode)).getHeader();
+        checkSupportedRelease(header);
+        return header;
     }
 
 
@@ -42,7 +89,7 @@ public class DeserializeData {
      * @return Iterable over pages
      * @throws CborRuntimeException
      */
-    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborRuntimeException {
+    public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         return new Iterable<Data.Page>() {
             public Iterator<Data.Page> iterator() {
                 return iterAnnotations(inputStream);
@@ -52,7 +99,7 @@ public class DeserializeData {
 
 
     /**
-     * Reads a page at a given byte offset in file input stream from a CBOR file.
+     * Reads a page at a given byte offset in file input stream from a CBOR file.   Does not check file type.
      *
      * Use at your own risk!
      *
@@ -78,7 +125,7 @@ public class DeserializeData {
      * @return Iterator over paragraphs
      * @throws CborRuntimeException
      */
-    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborRuntimeException {
+    public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         class ParagraphIterator extends CborListWithHeaderIterator<Data.Paragraph> {
             ParagraphIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
@@ -89,8 +136,14 @@ public class DeserializeData {
         };
 
         final CborDecoder decode = new CborDecoder(inputStream);
-        return new ParagraphIterator(decode);
+        final ParagraphIterator paragraphIterator = new ParagraphIterator(decode);
+
+        checkIsParagraphFile(paragraphIterator.getHeader());
+        checkSupportedRelease(paragraphIterator.getHeader());
+
+        return paragraphIterator;
     }
+
 
 
     /**
@@ -99,7 +152,7 @@ public class DeserializeData {
      * @return Iterator over paragraphs
      * @throws CborRuntimeException
      */
-    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborRuntimeException {
+    public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         return new Iterable<Data.Paragraph>() {
             public Iterator<Data.Paragraph> iterator() {
                 return iterParagraphs(inputStream);
@@ -206,20 +259,6 @@ public class DeserializeData {
         if (array.size() > 4) {
             pageType = pageTypeFromCbor(array.get(4));
             pageMetadata = pageMetadataFromCbor(array.get(5));// [ tag1, payload1, tag2, payload2, ...]
-/*
-          RedirectNames xs -> simple 0 xs
-          DisambiguationNames xs -> simple 1 xs
-          DisambiguationIds xs -> simple 2 xs
-          CategoryNames xs -> simple 3 xs
-          CategoryIds xs -> simple 4 xs
-          InlinkIds xs -> simple 5 xs
-          InlinkAnchors xs -> simple 6 xs
-          UnknownMetadata len tag y ->
-                 CBOR.encodeListLen (fromIntegral len)
-              <> CBOR.encodeInt tag
-              <> CBOR.encodeTerm y
-
-             */
         }
 
         return new Data.Page(pageName.getString(), new String(pageId.getBytes()), pageSkeletonsFromCbor(skeletons), pageType, pageMetadata);
@@ -320,5 +359,88 @@ public class DeserializeData {
             }
             default: throw new RuntimeException("paraBodyFromCbor found an unhandled case: "+array.toString());
         }
+    }
+
+
+    // =========== Header ===================
+
+
+
+    private static Header.FileType fileTypeFromCbor(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+        return Header.FileType.fromInt(((UnsignedInteger) array.get(0)).getValue().intValue());
+    }
+
+    public static Header.TrecCarHeader headerFromCbor(DataItem dataItem) throws Header.InvalidHeaderException {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+        if (array.size() != 3) {
+            throw new Header.InvalidHeaderException();
+        }
+
+        try {
+            String magicWord = ((UnicodeString) array.get(0)).getString();
+            if (!Objects.equals(magicWord, "CAR")) {
+                throw new Header.InvalidHeaderException();
+            }
+        } catch (ClassCastException e) {
+            throw new Header.InvalidHeaderException();
+        }
+
+        final Header.FileType fileType = fileTypeFromCbor(array.get(1));
+        Header.Provenance provenance = provenanceFromCbor(array.get(2));
+        return new Header.TrecCarHeader(fileType, provenance);
+    }
+
+
+
+    private static Header.Provenance provenanceFromCbor (DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+
+        List<DataItem> siteProvenance = ((Array) array.get(1)).getDataItems();
+        String dataReleaseName = ((UnicodeString) array.get(2)).getString();
+        final Header.Provenance provenance = new Header.Provenance(dataReleaseName);
+        List<DataItem> comments = ((Array) array.get(3)).getDataItems();
+        List<DataItem> transforms = ((Array) array.get(4)).getDataItems();
+
+        for (DataItem item: siteProvenance){
+            if (Special.BREAK.equals(item))  break;
+            provenance.getSiteProvenance().add( siteProvenanceFromCbor(item));
+        }
+        for (DataItem item: comments){
+            if (Special.BREAK.equals(item))  break;
+            provenance.getComments().add( ((UnicodeString) item).getString());
+        }
+        for (DataItem item: transforms){
+            if (Special.BREAK.equals(item))  break;
+            provenance.getTransforms().add( transformFromCbor(item));
+        }
+
+        return provenance;
+    }
+
+    private static Header.SiteProvenance siteProvenanceFromCbor(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+
+        String provSiteId = ((UnicodeString) array.get(1)).getString();
+        String language = ((UnicodeString) array.get(2)).getString();
+        String sourceName = ((UnicodeString) array.get(3)).getString();
+
+        List<DataItem> comments = ((Array) array.get(4)).getDataItems();
+
+        final Header.SiteProvenance siteProvenance = new Header.SiteProvenance(provSiteId, language, sourceName);
+
+        for (DataItem item: comments){
+            if (Special.BREAK.equals(item))  break;
+            siteProvenance.getSiteComments().add( ((UnicodeString) item).getString());
+        }
+        return siteProvenance;
+    }
+
+    private static Header.Transform transformFromCbor(DataItem dataItem) {
+        List<DataItem> array = ((Array) dataItem).getDataItems();
+
+        String toolName = ((UnicodeString) array.get(1)).getString();
+        String toolCommit = ((UnicodeString) array.get(2)).getString();
+        return new Header.Transform(toolName, toolCommit);
     }
 }

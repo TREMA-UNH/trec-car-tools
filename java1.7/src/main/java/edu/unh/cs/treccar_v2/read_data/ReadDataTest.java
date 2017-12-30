@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class ReadDataTest {
     public static void usage() {
-        System.out.println("Command line parameters: (pages|outlines|paragraphs) FILE");
+        System.out.println("Command line parameters: (header|pages|outlines|paragraphs) FILE");
         System.exit(-1);
     }
 
@@ -24,7 +24,13 @@ public class ReadDataTest {
             usage();
 
         String mode = args[0];
-        if (mode.equals("pages")) {
+        if (mode.equals("header")) {
+            final String pagesFile = args[1];
+            final FileInputStream fileInputStream = new FileInputStream(new File(pagesFile));
+            System.out.println(DeserializeData.getTrecCarHeader(fileInputStream));
+            System.out.println();
+            }
+        else if (mode.equals("pages")) {
             final String pagesFile = args[1];
             final FileInputStream fileInputStream = new FileInputStream(new File(pagesFile));
             for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream)) {

@@ -3,20 +3,21 @@ package edu.unh.cs.treccar_v2.read_data;
 import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.*;
+import edu.unh.cs.treccar_v2.Header;
 
 import java.util.Iterator;
 
 public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
-    CborDataItemIterator listIter;
-    DataItem firstElem;
-    TrecCarHeader header;
+    private CborDataItemIterator listIter;
+    private DataItem firstElem;
+    private Header.TrecCarHeader header;
 
     public CborListWithHeaderIterator(CborDecoder decoder) throws CborRuntimeException {
         // try reading the header
         try {
             DataItem dataItem = decoder.decodeNext();
             try {
-                this.header = new TrecCarHeader(dataItem);
+                this.header = DeserializeData.headerFromCbor(dataItem);
 
                 // decode contents, this should begin with an indefinite array
                 try {
@@ -27,7 +28,7 @@ public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
                     throw new CborRuntimeException(e);
                 }
                 this.firstElem = null;
-            } catch (TrecCarHeader.InvalidHeaderException e) {
+            } catch (Header.InvalidHeaderException e) {
                 // there is no header
                 this.header = null;
                 this.firstElem = dataItem;
@@ -58,5 +59,9 @@ public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException("Read-only iterator.");
+    }
+
+    public Header.TrecCarHeader getHeader() {
+        return header;
     }
 }
