@@ -8,9 +8,9 @@ import edu.unh.cs.treccar_v2.Header;
 import java.util.Iterator;
 
 public abstract class CborListWithHeaderIterator<T> implements Iterator<T> {
-    private CborDataItemIterator listIter;
+    private final CborDataItemIterator listIter;
     private DataItem firstElem;
-    private Header.TrecCarHeader header;
+    private  Header.TrecCarHeader header = null;
 
     public CborListWithHeaderIterator(CborDecoder decoder) throws CborRuntimeException {
         // try reading the header

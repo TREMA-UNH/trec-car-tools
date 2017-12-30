@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import com.sun.istack.internal.NotNull;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.Header;
 
@@ -16,16 +17,20 @@ public class DeserializeData {
 
 
     private static void checkSupportedRelease(Header.TrecCarHeader header) {
+        if(header == null){
+            throw new CborFileTypeException("This method only supports releases " + SUPPORTED_RELEASES_STR+", but this input has no release information. Please use an appropriate reader.");
+        }
+
         final String dataReleaseName = header.getProvenance().getDataReleaseName();
         if(!SUPPORTED_RELEASES.contains(dataReleaseName)) {
-            throw new CborFileTypeException("This method only supports releases  "+SUPPORTED_RELEASES_STR+", but input is of data release "+dataReleaseName+".");
+            throw new CborFileTypeException("This method only supports releases  "+SUPPORTED_RELEASES_STR+", but input is of data release "+dataReleaseName+". Please use an appropriate reader.");
         }
     }
 
     private static void checkIsPagesOrOutlines(Header.TrecCarHeader header) {
         final Header.FileType fileType = header.getFileType();
         if(! Header.FileType.OutlinesFile.equals(fileType) && !Header.FileType.PagesFile.equals(fileType)){
-            throw new CborFileTypeException("This method only support "+Header.FileType.PagesFile+" or "+Header.FileType.OutlinesFile+", but input is of file type "+fileType+".");
+            throw new CborFileTypeException("This method only supports "+Header.FileType.PagesFile+" or "+Header.FileType.OutlinesFile+", but input is of file type "+fileType+". Please use an appropriate reader.");
         }
     }
 
@@ -33,7 +38,7 @@ public class DeserializeData {
     private static void checkIsParagraphFile(Header.TrecCarHeader header) {
         final Header.FileType fileType = header.getFileType();
         if(! Header.FileType.ParagraphsFile.equals(fileType)){
-            throw new CborFileTypeException("This method only support "+Header.FileType.ParagraphsFile+", but input is of file type "+fileType+".");
+            throw new CborFileTypeException("This method only supports "+Header.FileType.ParagraphsFile+", but input is of file type "+fileType+". Please use an appropriate reader.");
         }
     }
 
@@ -45,9 +50,10 @@ public class DeserializeData {
      * @return Iterator over pages
      * @throws CborRuntimeException
      */
+    @NotNull
     public static Iterator<Data.Page> iterAnnotations(InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         class PageIterator extends CborListWithHeaderIterator<Data.Page> {
-            public PageIterator(CborDecoder decoder) throws CborRuntimeException {
+            private PageIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
             protected Data.Page parseItem(DataItem dataItem) {
@@ -59,8 +65,8 @@ public class DeserializeData {
         final PageIterator pageIterator = new PageIterator(decode);
 
         final Header.TrecCarHeader header = pageIterator.getHeader();
-        checkIsPagesOrOutlines(header);
         checkSupportedRelease(header);
+        checkIsPagesOrOutlines(header);
 
         return pageIterator;
     }
@@ -68,7 +74,7 @@ public class DeserializeData {
 
     public static Header.TrecCarHeader getTrecCarHeader(InputStream inputStream) throws Header.InvalidHeaderException {
         class PageIterator extends CborListWithHeaderIterator<Data.Page> {
-            public PageIterator(CborDecoder decoder) throws CborRuntimeException {
+            private PageIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
             protected Data.Page parseItem(DataItem dataItem) {
@@ -91,6 +97,7 @@ public class DeserializeData {
      */
     public static Iterable<Data.Page> iterableAnnotations(final InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         return new Iterable<Data.Page>() {
+            @NotNull
             public Iterator<Data.Page> iterator() {
                 return iterAnnotations(inputStream);
             }
@@ -125,9 +132,10 @@ public class DeserializeData {
      * @return Iterator over paragraphs
      * @throws CborRuntimeException
      */
+    @NotNull
     public static Iterator<Data.Paragraph> iterParagraphs(InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         class ParagraphIterator extends CborListWithHeaderIterator<Data.Paragraph> {
-            ParagraphIterator(CborDecoder decoder) throws CborRuntimeException {
+            private ParagraphIterator(CborDecoder decoder) throws CborRuntimeException {
                 super(decoder);
             }
             protected Data.Paragraph parseItem(DataItem dataItem) {
@@ -138,8 +146,8 @@ public class DeserializeData {
         final CborDecoder decode = new CborDecoder(inputStream);
         final ParagraphIterator paragraphIterator = new ParagraphIterator(decode);
 
-        checkIsParagraphFile(paragraphIterator.getHeader());
         checkSupportedRelease(paragraphIterator.getHeader());
+        checkIsParagraphFile(paragraphIterator.getHeader());
 
         return paragraphIterator;
     }
@@ -154,6 +162,8 @@ public class DeserializeData {
      */
     public static Iterable<Data.Paragraph> iterableParagraphs(final InputStream inputStream) throws CborRuntimeException, CborFileTypeException {
         return new Iterable<Data.Paragraph>() {
+            @Override
+            @NotNull
             public Iterator<Data.Paragraph> iterator() {
                 return iterParagraphs(inputStream);
             }
