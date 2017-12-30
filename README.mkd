@@ -16,11 +16,42 @@ If you are using anaconda, install the cbor library for python 3.5 / 3.6:
 conda install -c laura-dietz cbor=1.0.0 
 ```
 
-## How to use these tools?
+## How to use the python bindings for trec-car-tools?
 
 1. Get the data from [http://trec-car.cs.unh.edu](http://trec-car.cs.unh.edu)
 2. Clone this repository
-3. Look out for test.py and test.java files as examples for how to access the data.
+3. python setup.py install 
+
+Look out for test.py for an example on how to access the data.
+
+
+## How to use the java 1.7 bindings for trec-car-tools through maven?
+
+add to your project's pom.xml file (or similarly gradel or sbt):
+
+~~~~
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+~~~~
+
+add the trec-car-tools dependency:
+
+~~~~
+        <dependency>     
+	    <groupId>com.github.TREMA-UNH</groupId>
+	    <artifactId>trec-car-tools-java</artifactId>
+	    <version>2.0</version>
+        </dependency>
+~~~~
+
+compile your project with `mvn compile`
+
+
+
 
 ## Tool support
 
@@ -31,6 +62,8 @@ This package provides support for the following activities.
 
 
 ## Reading Data
+
+If you use python or java, please use trec-car-tools, no need to understand the following.  We provide bindings for haskell upon request.  If you are programming under a different language, you can use any CBOR library and decode the grammar below.
 
 [CBOR](cbor.io) is similar to JSON, but it is a binary format that compresses better and avoids text file encoding issues.
 
