@@ -4,9 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>edu.unh.cs.treccar</groupId>
-    <artifactId>treccar-tools-v2</artifactId>
-    <version>2.0</version>
+    <!--<groupId>edu.un/h.cs.treccar</groupId>-->
+    <!--<artifactId>treccar-tools-v2</artifactId>-->
+    <!--<version>2.0</version>-->
+
+
+    <groupId>com.github.TREMA-UNH</groupId>
+    <artifactId>trec-car-tools</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -18,6 +31,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations-java5</artifactId>
+            <version>RELEASE</version>
         </dependency>
     </dependencies>
 
@@ -41,11 +59,25 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
+                <version>3.2</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
                 </configuration>
+            </plugin>
+
+            <plugin>  <!-- Create sources.jar -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

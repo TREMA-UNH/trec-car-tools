@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import com.sun.istack.internal.NotNull;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.Header;
+import org.jetbrains.annotations.NotNull;
 
 public class DeserializeData {
     private static final List<String> SUPPORTED_RELEASES = Arrays.asList("trec-car v1.6", "trec-car v2.0");
