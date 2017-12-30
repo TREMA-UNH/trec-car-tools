@@ -4,18 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<groupId>edu.un/h.cs.treccar</groupId>-->
-    <!--<artifactId>treccar-tools-v2</artifactId>-->
-    <!--<version>2.0</version>-->
-
-
-    <groupId>com.github.TREMA-UNH</groupId>
-    <artifactId>trec-car-tools</artifactId>
-    <version>2.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <groupId>edu.unh.cs.treccar</groupId>
+    <artifactId>treccar-tools-example</artifactId>
+    <version>0.1</version>
 
     <repositories>
-        <repository>
+    <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -37,6 +31,12 @@
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>     
+	    <groupId>com.github.TREMA-UNH</groupId>
+	    <artifactId>trec-car-tools-java</artifactId>
+	    <version>2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

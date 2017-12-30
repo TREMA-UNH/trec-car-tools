@@ -1,6 +1,7 @@
-package edu.unh.cs.treccar_v2.read_data;
+package edu.unh.cs;
 
 import edu.unh.cs.treccar_v2.Data;
+import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,8 +12,8 @@ import java.util.List;
  * Date: 12/9/16
  * Time: 5:17 PM
  */
-public class ReadDataTest {
-    public static void usage() {
+public class TrecCarToolsExample {
+    private static void usage() {
         System.out.println("Command line parameters: (header|pages|outlines|paragraphs) FILE");
         System.exit(-1);
     }
@@ -29,7 +30,7 @@ public class ReadDataTest {
             final FileInputStream fileInputStream = new FileInputStream(new File(pagesFile));
             System.out.println(DeserializeData.getTrecCarHeader(fileInputStream));
             System.out.println();
-            }
+        }
         else if (mode.equals("pages")) {
             final String pagesFile = args[1];
             final FileInputStream fileInputStream = new FileInputStream(new File(pagesFile));
