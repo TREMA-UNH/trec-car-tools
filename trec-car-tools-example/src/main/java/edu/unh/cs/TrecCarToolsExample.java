@@ -58,13 +58,6 @@ public class TrecCarToolsExample {
             usage();
         }
 
-//        final FileInputStream fileInputStream4 = new FileInputStream(new File("release.articles"));
-//        for(Data.Page page: DeserializeData.iterableAnnotations(fileInputStream4)) {
-//            for (Data.Page.SectionPathParagraphs line : page.flatSectionPathsParagraphs()){
-//                System.out.println(line.getSectionPath()+"\t"+line.getParagraph().getTextOnly());
-//            }
-//            System.out.println();
-//        }
     }
 
 }
