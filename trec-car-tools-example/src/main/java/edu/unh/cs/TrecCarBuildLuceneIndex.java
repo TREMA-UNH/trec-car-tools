@@ -51,7 +51,16 @@ public class TrecCarBuildLuceneIndex {
             final IndexWriter indexWriter = setupIndexWriter(indexPath, "paragraph.lucene");
             final Iterator<Data.Paragraph> paragraphIterator = DeserializeData.iterParagraphs(fileInputStream2);
 
-            ParaToLuceneIterator docsIter = new ParaToLuceneIterator(paragraphIterator);
+            ParaToLuceneIterator docsIter = new ParaToLuceneIterator(paragraphIterator, new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        indexWriter.commit();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
             indexWriter.addDocuments(toIterable(docsIter));
             System.out.println("\n Done indexing.");
 
@@ -86,12 +95,14 @@ public class TrecCarBuildLuceneIndex {
 
 
     public static class ParaToLuceneIterator implements Iterator<Document> {
-        private static final int DEBUG_EVERY = 1000;
+        private static final int DEBUG_EVERY = 10000;
         private int counter = DEBUG_EVERY;
         private final Iterator<Data.Paragraph> paragraphIterator;
+        private final Runnable commitHook;
 
-        ParaToLuceneIterator(Iterator<Data.Paragraph> paragraphIterator){
+        ParaToLuceneIterator(Iterator<Data.Paragraph> paragraphIterator, Runnable commitHook){
             this.paragraphIterator = paragraphIterator;
+            this.commitHook = commitHook;
         }
 
         @Override
@@ -105,6 +116,7 @@ public class TrecCarBuildLuceneIndex {
             if(counter < 0) {
                 System.out.print('.');
                 counter = DEBUG_EVERY;
+                commitHook.run();
             }
 
             Data.Paragraph p = this.paragraphIterator.next();
