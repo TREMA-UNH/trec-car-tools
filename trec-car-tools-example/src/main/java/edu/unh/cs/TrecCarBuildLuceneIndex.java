@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,17 +52,15 @@ public class TrecCarBuildLuceneIndex {
             final IndexWriter indexWriter = setupIndexWriter(indexPath, "paragraph.lucene");
             final Iterator<Data.Paragraph> paragraphIterator = DeserializeData.iterParagraphs(fileInputStream2);
 
-            ParaToLuceneIterator docsIter = new ParaToLuceneIterator(paragraphIterator, new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        indexWriter.commit();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+            for (int i=1; paragraphIterator.hasNext(); i++){
+                final Document doc = paragraphToLuceneDoc(paragraphIterator.next());
+                indexWriter.addDocument(doc);
+                if (i % 10000 == 0) {
+                    System.out.print('.');
+                    indexWriter.commit();
                 }
-            });
-            indexWriter.addDocuments(toIterable(docsIter));
+            }
+
             System.out.println("\n Done indexing.");
 
             indexWriter.commit();
@@ -98,11 +97,9 @@ public class TrecCarBuildLuceneIndex {
         private static final int DEBUG_EVERY = 10000;
         private int counter = DEBUG_EVERY;
         private final Iterator<Data.Paragraph> paragraphIterator;
-        private final Runnable commitHook;
 
-        ParaToLuceneIterator(Iterator<Data.Paragraph> paragraphIterator, Runnable commitHook){
+        ParaToLuceneIterator(Iterator<Data.Paragraph> paragraphIterator){
             this.paragraphIterator = paragraphIterator;
-            this.commitHook = commitHook;
         }
 
         @Override
@@ -116,21 +113,25 @@ public class TrecCarBuildLuceneIndex {
             if(counter < 0) {
                 System.out.print('.');
                 counter = DEBUG_EVERY;
-                commitHook.run();
             }
 
             Data.Paragraph p = this.paragraphIterator.next();
-            final Document doc = new Document();
-            final String content = p.getTextOnly(); // <-- Todo Adapt this to your needs!
-            doc.add(new TextField("text", content, Field.Store.YES));
-            doc.add(new StringField("paragraphid", p.getParaId(), Field.Store.YES));  // don't tokenize this!
-            return doc;
+            return paragraphToLuceneDoc(p);
         }
 
         @Override
         public void remove() {
             this.paragraphIterator.remove();
         }
+    }
+
+    @NotNull
+    private static Document paragraphToLuceneDoc(Data.Paragraph p) {
+        final Document doc = new Document();
+        final String content = p.getTextOnly(); // <-- Todo Adapt this to your needs!
+        doc.add(new TextField("text", content, Field.Store.YES));
+        doc.add(new StringField("paragraphid", p.getParaId(), Field.Store.YES));  // don't tokenize this!
+        return doc;
     }
 
 
