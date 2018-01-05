@@ -39,7 +39,7 @@ public class TrecCarQueryLuceneIndex {
 
     private static void usage() {
         System.out.println("Command line parameters: action OutlineCBOR LuceneINDEX\n" +
-                "action is one of paragraph-output-sections | paragraphs-run-sections | paragraphs-run-pages | pages-run-pages");
+                "action is one of output-sections | paragraphs-run-sections | paragraphs-run-pages | pages-run-pages");
         System.exit(-1);
     }
 
