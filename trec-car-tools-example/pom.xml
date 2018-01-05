@@ -36,6 +36,14 @@
             <artifactId>annotations-java5</artifactId>
             <version>RELEASE</version>
         </dependency>
+
+        <!-- Only necessary for lucene indexing -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>7.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -50,7 +58,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>edu.unh.cs.treccar_v2.read_data.ReadDataTest</mainClass>
+                            <mainClass>edu.unh.cs.TrecCarToolsExample</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
