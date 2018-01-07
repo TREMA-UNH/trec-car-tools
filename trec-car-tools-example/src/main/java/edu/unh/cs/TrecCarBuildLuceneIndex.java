@@ -15,9 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 /*
  * User: dietz
@@ -73,10 +71,20 @@ public class TrecCarBuildLuceneIndex {
             System.out.println("Creating page index in "+indexPath);
             final IndexWriter indexWriter = setupIndexWriter(indexPath, "pages.lucene");
 
-            Iterator<Data.Page> pageIterator = DeserializeData.iterAnnotations(fileInputStream);
-            PageToLuceneIterator docsIter = new PageToLuceneIterator(pageIterator);
-            indexWriter.addDocuments(toIterable(docsIter));
+            final Iterator<Data.Page> pageIterator = DeserializeData.iterAnnotations(fileInputStream);
+
+            for (int i=1; pageIterator.hasNext(); i++){
+                final Document doc = pageToLuceneDoc(pageIterator.next());
+                indexWriter.addDocument(doc);
+                if (i % 10000 == 0) {
+                    System.out.print('.');
+                    indexWriter.commit();
+                }
+            }
+
             System.out.println("\n Done indexing.");
+
+
             indexWriter.commit();
             indexWriter.close();
         }
@@ -158,19 +166,24 @@ public class TrecCarBuildLuceneIndex {
             }
 
             Data.Page p = this.pageIterator.next();
-            final Document doc = new Document();
-            StringBuilder content = new StringBuilder();
-            pageContent(p, content);                    // Todo Adapt this to your needs!
-
-            doc.add(new TextField("text",  content.toString(), Field.Store.NO));  // dont store, just index
-            doc.add(new StringField("pageid", p.getPageId(), Field.Store.YES));  // don't tokenize this!
-            return doc;
+            return pageToLuceneDoc(p);
         }
 
         @Override
         public void remove() {
             this.pageIterator.remove();
         }
+    }
+
+    @NotNull
+    private static Document pageToLuceneDoc(Data.Page p) {
+        final Document doc = new Document();
+        StringBuilder content = new StringBuilder();
+        pageContent(p, content);                    // Todo Adapt this to your needs!
+
+        doc.add(new TextField("text",  content.toString(), Field.Store.NO));  // dont store, just index
+        doc.add(new StringField("pageid", p.getPageId(), Field.Store.YES));  // don't tokenize this!
+        return doc;
     }
 
 
