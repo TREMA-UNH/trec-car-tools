@@ -19,7 +19,7 @@
   	<dependency>
             <groupId>com.github.TREMA-UNH</groupId>
             <artifactId>trec-car-tools-java</artifactId>
-            <version>5</version>
+            <version>6</version>
         </dependency>
         <dependency>
             <groupId>co.nstant.in</groupId>
