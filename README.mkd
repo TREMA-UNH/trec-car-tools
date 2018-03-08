@@ -2,13 +2,13 @@
 
 Development tools for participants of the TREC Complex Answer Retrieval track.
 
-Data release support for v2.0.
+Data release support for v1.5 and v2.0.
 
 Note that in order to allow to compile your project for two trec-car format versions, the maven artifact Id was changed to `treccar-tools-v2` with version 2.0, and the package path changed to `treccar_v2` 
 
 
 Current support for
-- Python 3.5, 3.6
+- Python 3.5 or 3.6
 - Java 1.7
 
 If you are using [Anaconda](https://www.anaconda.com/), install the `cbor`
@@ -17,11 +17,11 @@ library for Python 3.5 / 3.6:
 conda install -c laura-dietz cbor=1.0.0 
 ```
 
-## How to use the python bindings for trec-car-tools?
+## How to use the Python bindings for trec-car-tools?
 
 1. Get the data from [http://trec-car.cs.unh.edu](http://trec-car.cs.unh.edu)
 2. Clone this repository
-3. python setup.py install 
+3. `python setup.py install`
 
 Look out for test.py for an example on how to access the data.
 
@@ -64,7 +64,7 @@ This package provides support for the following activities.
 
 ## Reading Data
 
-If you use python or java, please use trec-car-tools, no need to understand the following.  We provide bindings for haskell upon request.  If you are programming under a different language, you can use any CBOR library and decode the grammar below.
+If you use python or java, please use `trec-car-tools`, no need to understand the following.  We provide bindings for haskell upon request.  If you are programming under a different language, you can use any CBOR library and decode the grammar below.
 
 [CBOR](cbor.io) is similar to JSON, but it is a binary format that compresses better and avoids text file encoding issues.
 
@@ -126,10 +126,10 @@ Example of ranking format
 
 ## Integration with other tools
 
-It is recommended to use the format_runs package to write run files. Here an example:
+It is recommended to use the `format_runs` package to write run files. Here an example:
 
 
-        with open('runfile',mode='w', encoding='UTF-8') as f:
+        with open('runfile', mode='w', encoding='UTF-8') as f:
             writer = configure_csv_writer(f)
             for page in pages:
                 for section_path in page.flat_headings_list():
@@ -138,7 +138,7 @@ It is recommended to use the format_runs package to write run files. Here an exa
 
             f.close()
 
-This ensures that the output is correctly formatted to work with trec_eval and the provided qrels file.
+This ensures that the output is correctly formatted to work with `trec_eval` and the provided qrels file.
 
 Run [trec_eval](https://github.com/usnistgov/trec_eval/blob/master/README) version 9.0.4 as usual:
 
