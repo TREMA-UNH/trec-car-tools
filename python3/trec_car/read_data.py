@@ -212,7 +212,7 @@ class PageMetadata(object):
 
     @staticmethod
     def default():
-        return PageMetadata(ArticlePage(), None, None, None, None, None, None)
+        return PageMetadata(None, None, None, None, None, None, None)
 
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
