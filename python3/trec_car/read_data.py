@@ -1,5 +1,5 @@
-# Use python 3.5
-# conda install -c auto cbor=0.1.4
+# Use python 3.5 or higher
+# obsolete:  conda install -c auto cbor=0.1.4
 
 from __future__ import print_function
 import cbor
@@ -25,17 +25,24 @@ class Page(object):
 
        The contents of the page
 
+    .. attribute:: page_type
+
+       :rtype: PageType
+
+       Type about the page
+
     .. attribute:: page_meta
 
        :rtype: PageMetadata
 
        Metadata about the page
     """
-    def __init__(self, page_name, page_id, skeleton, page_meta):
+    def __init__(self, page_name, page_id, skeleton, page_type, page_meta):
         self.page_name = page_name
         self.page_id = page_id
         self.skeleton = list(skeleton)
         self.child_sections = [child for child in self.skeleton if isinstance(child, Section)]
+        self.page_type = page_type
         self.page_meta = page_meta
 
     def deep_headings_list(self):
@@ -65,10 +72,12 @@ class Page(object):
         pagename = cbor[1]
         # assert cbor[2][0] == 0 # PageId tag
         pageId = cbor[2].decode('ascii')
+
         if len(cbor)==4:
-            return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.default())
+            return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), ArticlePage, PageMetadata.default())
         else:
-            return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), PageMetadata.from_cbor(cbor[4]))
+            page_type = PageType.from_cbor(cbor[4])
+            return Page(pagename, pageId, map(PageSkeleton.from_cbor, cbor[3]), page_type, PageMetadata.from_cbor(cbor[5]))
 
     def __str__(self):
         return "Page(%s)" % self.page_name
@@ -148,12 +157,6 @@ class PageMetadata(object):
     """
     Meta data for a page
 
-    .. attribute:: pageType
-
-        :rtype: PageType
-
-        What kind of page is this?
-
     .. attribute:: redirectNames
 
         :rtype: PageName
@@ -189,50 +192,93 @@ class PageMetadata(object):
         :rtype: str
 
         Page IDs of pages containing inlinks
+
+    .. attribute:: inlinkAnchors
+       inlinkAnchor frequencies
+
+        :rtype: str
+
+        (Anchor text, frequency) of pages containing inlinks
     """
-    def __init__(self, pageType, redirectNames,disambiguationNames,disambiguationIds,  categoryNames, categoryIds, inlinkIds):
+    def __init__(self, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds,
+                 inlinkAnchors):
+        self.inlinkAnchors = inlinkAnchors
         self.inlinkIds = inlinkIds
         self.categoryIds = categoryIds
         self.categoryNames = categoryNames
         self.disambiguationIds = disambiguationIds
         self.disambiguationNames = disambiguationNames
         self.redirectNames = redirectNames
-        self.pageType = pageType
 
     @staticmethod
     def default():
-        return PageMetadata(ArticlePage(), None, None, None ,None, None, None)
+        return PageMetadata(ArticlePage(), None, None, None, None, None, None)
 
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
         disamStr = ("" if self.disambiguationNames is None else (" disambiguated = "+", ".join([name for name in self.disambiguationNames])))
         catStr = ("" if self.redirectNames is None else (" categories = "+", ".join([name for name in self.categoryNames])))
         inlinkStr = ("" if self.inlinkIds is None else (" inlinks = "+", ".join([name for name in self.inlinkIds])))
-        return  "%s %s %s %s %s" % (self.pageType, redirStr, disamStr, catStr, inlinkStr)
+        # inlinkAnchorStr = str (self.inlinkAnchors)
+        inlinkAnchorStr = ("" if self.inlinkAnchors is None else \
+                                (" inlinkAnchors = "+", ".join( \
+                                    [ ("%s: %d" % (name, freq)) for (name, freq) in self.inlinkAnchors] \
+                                    # [ ("%s: " % (name)) for (name, freq) in self.inlinkAnchors] \
+                                )))
+        return  "%s \n%s \n%s \n%s \n%s\n" % (redirStr, disamStr, catStr, inlinkStr, inlinkAnchorStr)
 
     @staticmethod
     def from_cbor(cbor):
-        pageType=PageType.from_cbor(cbor[1])
+        redirectNames=None
+        disambiguationNames=None
+        disambiguationIds=None
+        categoryNames=None
+        categoryIds=None
+        inlinkIds=None
+        inlinkAnchors=None
 
         def decodeListOfIdList(cbor):
             if len(cbor)==0: return None
             else:
-                lst = cbor[0]
-                [elem.decode('ascii') for elem in lst]
+                return [elem.decode('ascii') for elem in cbor]
 
         def decodeListOfNameList(cbor):
             if len(cbor)==0: return None
             else:
-                return cbor[0]
+                return cbor
 
-        redirectNames=decodeListOfNameList(cbor[2])
-        disambiguationNames=decodeListOfNameList(cbor[3])
-        disambiguationIds=decodeListOfIdList(cbor[4])
-        categoryNames=decodeListOfNameList(cbor[5])
-        categoryIds=decodeListOfIdList(cbor[6])
-        inlinkIds=decodeListOfIdList(cbor[7])
+        def decodeListOfNameIntList(cbor):
+            if len(cbor)==0: return None
+            else:
+                # need to convert list of pair-lists to lists of pair-tuples
+                return [(elem[0], elem[1]) for elem in cbor]
 
-        return PageMetadata(pageType, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds)
+        for i in range(0, len(cbor), 2):
+            tag = cbor[i][0]
+            cbor_data = cbor[i+1]
+
+            if tag == 0:
+                redirectNames = decodeListOfNameList(cbor_data)
+            elif tag == 1:
+                disambiguationNames=decodeListOfNameList(cbor_data)
+            elif tag == 2:
+                disambiguationIds=decodeListOfIdList(cbor_data)
+            elif tag == 3:
+                categoryNames=decodeListOfNameList(cbor_data)
+            elif tag == 4:
+                categoryIds=decodeListOfIdList(cbor_data)
+            elif tag == 5:
+                inlinkIds=decodeListOfIdList(cbor_data)
+
+            elif tag == 6:
+                # compatability with v1.6
+                inlinkAnchors = [(anchor, 1) for anchor in decodeListOfNameList(cbor_data)]
+            elif tag == 7:
+                # compatability with v2.0
+                inlinkAnchors = decodeListOfNameIntList(cbor_data)
+            i+=2
+
+        return PageMetadata(redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds, inlinkAnchors)
 
 class PageSkeleton(object):
     """
@@ -502,13 +548,17 @@ def _iter_with_header(file, parse, expected_file_type):
     while True:
         try:
             # Check for break symbol
-            b = file.peek(1)
-            if b[0:1] == b'\xff':
+            if (peek_for_break(file)):
                 break
 
             yield parse(cbor.load(file))
         except EOFError:
             break
+
+def peek_for_break(cbor):
+    b = cbor.peek(1)
+    return b[0:1] == b'\xff'
+
 
 def iter_annotations(file):
     """
