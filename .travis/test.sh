@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 python3/test.py pages $pages >/dev/null
 python3/test.py outlines $outlines >/dev/null
