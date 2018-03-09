@@ -10,8 +10,10 @@ outlines=sys.argv[2]
 paragraphs=sys.argv[3]
 
 
+# to open either pages or outlines use iter_annotations
+
 with open(articles, 'rb') as f:
-    for p in iter_annotations(f):
+    for p in iter_pages(f):
         print('\npagename:', p.page_name)
         print('\npageid:', p.page_id)
         print('\nmeta:', p.page_meta)
@@ -31,7 +33,7 @@ with open(articles, 'rb') as f:
 exit(0)
 
 with open(outlines, 'rb') as f:
-    for p in iter_annotations(f):
+    for p in iter_outlines(f):
         print('\npagename:', p.page_name)
 
         # get one data structure with nested (heading, [children]) pairs

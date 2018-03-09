@@ -540,12 +540,12 @@ class ParaLink(ParaBody):
     def __str__(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)
 
-def _iter_with_header(file, parse, expected_file_type):
+def _iter_with_header(file, parse, expected_file_types):
     maybe_hdr = cbor.load(file)
     if isinstance(maybe_hdr, list) and maybe_hdr[0] == 'CAR':
         # we have a header
         file_type = maybe_hdr[1][0]
-        assert file_type == expected_file_type
+        assert file_type in expected_file_types
 
         # read beginning of variable-length list
         assert file.read(1) == b'\x9f'
@@ -574,7 +574,30 @@ def iter_annotations(file):
     :type file: typing.TextIO
     :rtype: typing.Iterator[Page]
     """
-    return _iter_with_header(file, Page.from_cbor, 0)
+    return _iter_with_header(file, Page.from_cbor, [0,1])
+
+
+
+def iter_pages(file):
+    """
+    Iterate over the :class:`Page`\ s of an annotations file.
+
+    :type file: typing.TextIO
+    :rtype: typing.Iterator[Page]
+    """
+    return _iter_with_header(file, Page.from_cbor, [0])
+
+
+
+def iter_outlines(file):
+    """
+    Iterate over the :class:`Page`\ s of an annotations file.
+
+    :type file: typing.TextIO
+    :rtype: typing.Iterator[Page]
+    """
+    return _iter_with_header(file, Page.from_cbor, [1])
+
 
 def iter_paragraphs(file):
     """
@@ -583,7 +606,7 @@ def iter_paragraphs(file):
     :type file: typing.TextIO
     :rtype: typing.Iterator[Paragraph]
     """
-    return _iter_with_header(file, Paragraph.from_cbor, 2)
+    return _iter_with_header(file, Paragraph.from_cbor, [2])
 
 def dump_annotations(file):
     for page in iter_annotations(file):
