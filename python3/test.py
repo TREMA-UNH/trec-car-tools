@@ -7,15 +7,9 @@ def dump_pages(args):
     for p in iter_pages(args.file):
         print(p.page_meta)
         print(p)
-    for p in iter_annotations(args.file):
-        print(p.page_meta)
-        print(p)
 
 def dump_outlines(args):
     for p in iter_outlines(args.file):
-        print(p.page_meta)
-        print(p)
-    for p in iter_annotations(args.file):
         print(p.page_meta)
         print(p)
 
