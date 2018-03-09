@@ -110,6 +110,13 @@ class Page(object):
 class PageType(object):
     """
     An abstract base class representing the various types of pages.
+
+    Subclasses include
+
+    * :class:`ArticlePage`
+    * :class:`CategoryPage`
+    * :class:`DisambiguationPage`
+    * :class:`RedirectPage`
     """
     @staticmethod
     def from_cbor(cbor):
