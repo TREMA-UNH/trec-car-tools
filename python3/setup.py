@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='trec-car-tools',
-    version='1.4',
+    version='2.0',
     packages=['trec_car'],
     url='trec-car.cs.unh.edu',
     license='BSD 3-Clause',
