@@ -471,7 +471,7 @@ class ParaBody(object):
 
         :rtype: str
         """
-        raise UnimplementedError
+        raise NotImplementedError
 
 class ParaText(ParaBody):
     """
