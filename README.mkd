@@ -1,6 +1,6 @@
 # TREC Car Tools
 
-[![Travis badge](https://travis-ci.org/TREMA-UNH/trec-car-tools.svg?branch=master)](https://travis-ci.org/TREMA-UNH/)
+[![Travis badge](https://travis-ci.org/TREMA-UNH/trec-car-tools.svg?branch=master)](https://travis-ci.org/TREMA-UNH/trec-car-tools)
 
 Development tools for participants of the TREC Complex Answer Retrieval track.
 
