@@ -67,7 +67,7 @@ class Page(object):
 
     @staticmethod
     def from_cbor(cbor):
-        assert cbor[0] == 0 # tag
+        assert cbor[0] == 0 or cbor[0] == 1 # tag
         # assert cbor[1][0] == 0 # PageName tag
         pagename = cbor[1]
         # assert cbor[2][0] == 0 # PageId tag
