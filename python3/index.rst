@@ -1,15 +1,57 @@
-Welcome to trec-car-tools's documentation!
-==========================================
+trec-car-tools
+==============
 
 This is the documentation for ``trec-car-tools``, a Python 3 library for reading
-and manipulating the TREC Complex Answer Retrieval (CAR) dataset.
+and manipulating the `TREC Complex Answer Retrieval
+<http://trec-car.cs.unh.edu/>`_ (CAR) dataset.
+
+Getting started
+---------------
+
+This library requires Python 3.3 or greater. It can can be installed with
+``setup.py`` ::
+
+  python3 ./setup.py install
+
+If you are using `Anaconda <https://www.anaconda.com/>`_, install the ``cbor``
+library for Python 3.5 / 3.6: ::
+
+  conda install -c laura-dietz cbor=1.0.0 
+        
+Once you have installed the library, you can download a `dataset
+<http://trec-car.cs.unh.edu/datareleases/>`_ and start playing.
 
 Reading the dataset
 -------------------
 
+The TREC CAR dataset consists of a number of different exports. These include,
+
+ * Annotations files (also called "pages files") contain full Wikipedia pages and their contents
+ * Paragraphs files contain only paragraphs disembodied from their pages
+ * Outlines files contain only the section structure of pages and no textual content
+
+To read an annotations file use the :func:`iter_annotations` function:
+
 .. autofunction:: trec_car.read_data.iter_annotations
 
+For instance, to list the page IDs of pages in a pages file one might write
+
+.. code-block:: python
+
+   for page in read_data.iter_annotations(open('train.test200.cbor', 'rb')):
+       print(page.pageId)
+
+Likewise, to read a paragraphs file the :func:`iter_paragraphs` function is
+provided
+
 .. autofunction:: trec_car.read_data.iter_paragraphs
+
+To list the text of all paragraphs in a paragarphs file one might write,
+
+.. code-block:: python
+
+   for para in read_data.iter_paragraphs(open('train.test200.cbor', 'rb')):
+       print(para.getText())
 
 Basic types
 -----------

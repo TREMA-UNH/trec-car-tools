@@ -110,6 +110,13 @@ class Page(object):
 class PageType(object):
     """
     An abstract base class representing the various types of pages.
+
+    Subclasses include
+
+    * :class:`ArticlePage`
+    * :class:`CategoryPage`
+    * :class:`DisambiguationPage`
+    * :class:`RedirectPage`
     """
     @staticmethod
     def from_cbor(cbor):
@@ -212,7 +219,7 @@ class PageMetadata(object):
 
     @staticmethod
     def default():
-        return PageMetadata(ArticlePage(), None, None, None, None, None, None)
+        return PageMetadata(None, None, None, None, None, None, None)
 
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
