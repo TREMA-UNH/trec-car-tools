@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -e
 
 python3/test.py pages $pages >/dev/null
 python3/test.py paragraphs $paragraphs >/dev/null
