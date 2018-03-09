@@ -19,6 +19,10 @@ if __name__ == '__main__':
     p.add_argument('file', type=argparse.FileType('rb'), help='A pages file')
     p.set_defaults(func=dump_pages)
 
+    p = subparser.add_parser('outlines', help='Dump outlines')
+    p.add_argument('file', type=argparse.FileType('rb'), help='An outlines file')
+    p.set_defaults(func=dump_pages)
+
     p = subparser.add_parser('paragraphs', help='Dump paragraphs')
     p.add_argument('file', type=argparse.FileType('rb'), help='A paragraphs file')
     p.set_defaults(func=dump_paragraphs)
