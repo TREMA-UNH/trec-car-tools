@@ -30,7 +30,7 @@ with open(articles, 'rb') as f:
             print('flat headings= ' ,["/".join([section.heading for section in sectionpath]) for sectionpath in p.flat_headings_list()])
 
 
-exit(0)
+
 
 with open(outlines, 'rb') as f:
     for p in iter_outlines(f):
@@ -46,6 +46,8 @@ with open(outlines, 'rb') as f:
         print('deep headings= ', p.deep_headings_list())
 
         print('flat headings= ', p.flat_headings_list())
+
+exit(0)
 
 
 with open(paragraphs, 'rb') as f:
