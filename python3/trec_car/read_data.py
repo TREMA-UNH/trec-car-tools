@@ -323,7 +323,7 @@ class Section(PageSkeleton):
     """
     A section of a Wikipedia page.
 
-    .. attribute:: title
+    .. attribute:: heading
 
        :rtype: str
 
