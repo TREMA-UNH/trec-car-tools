@@ -58,6 +58,7 @@ class Page(object):
             for section, children in headings:
                 new_prefix = prefix + [section]
                 if len(children)>0 :
+                    yield new_prefix
                     yield from flatten(new_prefix, children)
                 else:
                     yield new_prefix
