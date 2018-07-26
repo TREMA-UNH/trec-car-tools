@@ -25,9 +25,9 @@ with open(articles, 'rb') as f:
         if len(p.outline())>0:
             print('heading 1=', p.outline()[0].__str__())
 
-            print('deep headings= ', [ (section.heading, len(children)) for (section, children) in p.deep_headings_list()])
+            print('deep headings= ', [ (str(section.heading), len(children)) for (section, children) in p.deep_headings_list()])
 
-            print('flat headings= ' ,["/".join([section.heading for section in sectionpath]) for sectionpath in p.flat_headings_list()])
+            print('flat headings= ' ,["/".join([str(section.heading) for section in sectionpath]) for sectionpath in p.flat_headings_list()])
 
 
 
@@ -38,14 +38,14 @@ with open(outlines, 'rb') as f:
 
         # get one data structure with nested (heading, [children]) pairs
         headings = p.nested_headings()
-        print(headings)
+        print('headings= ',  [ (str(section.heading), len(children)) for (section, children) in headings])
 
         if len(p.outline())>2:
             print('heading 1=', p.outline()[0])
 
-        print('deep headings= ', p.deep_headings_list())
+            print('deep headings= ', [ (str(section.heading), len(children)) for (section, children) in p.deep_headings_list()])
 
-        print('flat headings= ', p.flat_headings_list())
+            print('flat headings= ' ,["/".join([str(section.heading) for section in sectionpath]) for sectionpath in p.flat_headings_list()])
 
 exit(0)
 
