@@ -11,7 +11,7 @@ Note that in order to allow to compile your project for two trec-car format vers
 
 Current support for
 - Python 3.5 or 3.6
-- Java 1.7
+- Java 1.8
 
 If you are using [Anaconda](https://www.anaconda.com/), install the `cbor`
 library for Python 3.5 / 3.6:
@@ -28,7 +28,7 @@ conda install -c laura-dietz cbor=1.0.0
 Look out for test.py for an example on how to access the data.
 
 
-## How to use the java 1.7 bindings for trec-car-tools through maven?
+## How to use the java 1.8 (or higher) bindings for trec-car-tools through maven?
 
 add to your project's pom.xml file (or similarly gradel or sbt):
 
@@ -47,7 +47,7 @@ add the trec-car-tools dependency:
         <dependency>     
 	    <groupId>com.github.TREMA-UNH</groupId>
 	    <artifactId>trec-car-tools-java</artifactId>
-	    <version>2.0</version>
+	    <version>17</version>
         </dependency>
 ~~~~
 
