@@ -7,11 +7,13 @@ def dump_pages(args):
     for p in iter_pages(args.file):
         print(p.page_meta)
         print(p)
+        print("\n".join([("%s %s"% (heading,content)) for (heading,content) in p.deep_headings_list()]))
 
 def dump_outlines(args):
     for p in iter_outlines(args.file):
         print(p.page_meta)
         print(p)
+        print("\n".join([("%s"% heading ) for (heading,empty_content) in p.deep_headings_list()]))
 
 def dump_paragraphs(args):
     for p in iter_paragraphs(args.file):

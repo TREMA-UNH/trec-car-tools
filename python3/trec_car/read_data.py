@@ -546,7 +546,7 @@ def _iter_with_header(file, parse, expected_file_types):
     if isinstance(maybe_hdr, list) and maybe_hdr[0] == 'CAR':
         # we have a header
         file_type = maybe_hdr[1][0]
-        assert file_type in expected_file_types
+        assert file_type in expected_file_types, ('File type tage is expected to be %s but given file is of type %s' % (expected_file_types, file_type))
 
         # read beginning of variable-length list
         assert file.read(1) == b'\x9f'
@@ -575,7 +575,8 @@ def iter_annotations(file):
     :type file: typing.TextIO
     :rtype: typing.Iterator[Page]
     """
-    return _iter_with_header(file, Page.from_cbor, [0,1])
+    # return _iter_with_header(file, Page.from_cbor, [0,1])
+    TrecCarHeader.from_cbor(file)
 
 
 

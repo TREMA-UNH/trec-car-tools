@@ -23,7 +23,7 @@ with open(articles, 'rb') as f:
         #print(headings)
 
         if len(p.outline())>0:
-            print('heading 1=', p.outline()[0].__str__())
+            print( p.outline()[0].__str__())
 
             print('deep headings= ', [ (str(section.heading), len(children)) for (section, children) in p.deep_headings_list()])
 
@@ -33,7 +33,7 @@ with open(articles, 'rb') as f:
 
 
 with open(outlines, 'rb') as f:
-    for p in iter_outlines(f):
+    for p in iter_annotations(f):
         print('\npagename:', p.page_name)
 
         # get one data structure with nested (heading, [children]) pairs
@@ -47,7 +47,7 @@ with open(outlines, 'rb') as f:
 
             print('flat headings= ' ,["/".join([str(section.heading) for section in sectionpath]) for sectionpath in p.flat_headings_list()])
 
-exit(0)
+# exit(0)
 
 
 with open(paragraphs, 'rb') as f:
