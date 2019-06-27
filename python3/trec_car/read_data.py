@@ -2,6 +2,9 @@
 # obsolete:  conda install -c auto cbor=0.1.4
 
 from __future__ import print_function
+
+from abc import abstractmethod
+
 import cbor
 import itertools
 import typing
@@ -330,6 +333,12 @@ class Section(PageSkeleton):
 
        The section heading.
 
+    .. attribute:: headingId
+
+       :rtype: str
+
+       The unique identifier of a section heading.
+
     .. attribute:: children
 
        :rtype: typing.List[PageSkeleton]
@@ -470,9 +479,7 @@ class ParaBody(object):
         else:
             assert(False)
 
-    def get_text(self):
-        raise NotImplementedError
-
+    @abstractmethod
     def get_text(self):
         """
         Get all of the text within a :class:`ParaBody`.
@@ -572,11 +579,11 @@ def iter_annotations(file):
     """
     Iterate over the :class:`Page`\ s of an annotations file.
 
-    :type file: typing.TextIO
+    :type file: typing.BinaryIO
     :rtype: typing.Iterator[Page]
     """
-    # return _iter_with_header(file, Page.from_cbor, [0,1])
-    TrecCarHeader.from_cbor(file)
+    return _iter_with_header(file, Page.from_cbor, [0,1])
+    # return TrecCarHeader.from_cbor(file)
 
 
 
@@ -584,7 +591,7 @@ def iter_pages(file):
     """
     Iterate over the :class:`Page`\ s of an annotations file.
 
-    :type file: typing.TextIO
+    :type file: typing.BinaryIO
     :rtype: typing.Iterator[Page]
     """
     return _iter_with_header(file, Page.from_cbor, [0])
@@ -595,7 +602,7 @@ def iter_outlines(file):
     """
     Iterate over the :class:`Page`\ s of an annotations file.
 
-    :type file: typing.TextIO
+    :type file: typing.BinaryIO
     :rtype: typing.Iterator[Page]
     """
     return _iter_with_header(file, Page.from_cbor, [1])
@@ -605,7 +612,7 @@ def iter_paragraphs(file):
     """
     Iterate over the :class:`Paragraph`\ s of an paragraphs file.
 
-    :type file: typing.TextIO
+    :type file: typing.BinaryIO
     :rtype: typing.Iterator[Paragraph]
     """
     return _iter_with_header(file, Paragraph.from_cbor, [2])
