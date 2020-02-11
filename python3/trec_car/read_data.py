@@ -126,7 +126,11 @@ class PageType(object):
         elif typetag == 1: return CategoryPage()
         elif typetag == 2: return DisambiguationPage()
         elif typetag == 3:
-            targetPage = cbor[1].decode('ascii')
+            target = cbor[1]
+            if type(target) == list: # TODO this is almost certainly wrong
+                targetPage = target[1]
+            else:
+                targetPage = target.decode('ascii')
             return RedirectPage(targetPage)
         else:
             print("Deserialisation error for PageType cbor="+cbor)
@@ -225,7 +229,7 @@ class PageMetadata(object):
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
         disamStr = ("" if self.disambiguationNames is None else (" disambiguated = "+", ".join([name for name in self.disambiguationNames])))
-        catStr = ("" if self.redirectNames is None else (" categories = "+", ".join([name for name in self.categoryNames])))
+        catStr = ("" if self.redirectNames is None else (" categories = "+", ".join([name for name in (self.categoryNames or [])])))
         inlinkStr = ("" if self.inlinkIds is None else (" inlinks = "+", ".join([name for name in self.inlinkIds])))
         # inlinkAnchorStr = str (self.inlinkAnchors)
         inlinkAnchorStr = ("" if self.inlinkAnchors is None else \
