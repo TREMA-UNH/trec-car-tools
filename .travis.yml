@@ -3,7 +3,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y maven python3-pip
 script:
-  - pip3 install --user python3/
+  - pip3 install python3/
   - pushd trec-car-tools-example; mvn install; popd
 
   - curl http://trec-car.cs.unh.edu/datareleases/v2.0/test200.v2.0.tar.xz | tar -xJ
