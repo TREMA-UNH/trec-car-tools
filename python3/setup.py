@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='trec-car-tools',
-    version='2.3',
+    version='2.4',
     packages=['trec_car'],
     url='https://github.com/TREMA-UNH/trec-car-tools/python3',
     # download_url='https://github.com/TREMA-UNH/trec-car-tools/archive/2.0.tar.gz',
@@ -19,5 +19,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8'
        ]
 )
