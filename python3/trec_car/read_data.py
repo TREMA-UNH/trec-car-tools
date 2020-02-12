@@ -225,7 +225,7 @@ class PageMetadata(object):
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
         disamStr = ("" if self.disambiguationNames is None else (" disambiguated = "+", ".join([name for name in self.disambiguationNames])))
-        catStr = ("" if self.redirectNames is None else (" categories = "+", ".join([name for name in self.categoryNames])))
+        catStr = ("" if self.categoryNames is None else (" categories = "+", ".join([name for name in self.categoryNames])))
         inlinkStr = ("" if self.inlinkIds is None else (" inlinks = "+", ".join([name for name in self.inlinkIds])))
         # inlinkAnchorStr = str (self.inlinkAnchors)
         inlinkAnchorStr = ("" if self.inlinkAnchors is None else \
