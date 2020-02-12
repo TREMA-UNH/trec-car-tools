@@ -4,6 +4,11 @@ python:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y maven
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
 install:
   - pip install -r python3/requirements.txt
 script:
