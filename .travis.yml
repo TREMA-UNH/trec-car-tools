@@ -1,7 +1,7 @@
 language: python
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y maven2 python3-pip
+  - sudo apt-get install -y maven python3-pip
 script:
   - pip3 install --user python3/
   - pushd trec-car-tools-example; mvn install; popd
