@@ -12,7 +12,7 @@ setup(
     author='laura-dietz',
     author_email='Laura.Dietz@unh.edu',
     description='Support tools for TREC CAR participants. Also see trec-car.cs.unh.edu',
-    install_requires=['cbor>=1.0.0', 'typing>=3.6.2', 'numpy>=1.11.2],
+    install_requires=['cbor>=1.0.0', 'typing>=3.6.2', 'numpy>=1.11.2'],
     python_requires='>=3',
     classifiers=[
         'Programming Language :: Python :: 3',
