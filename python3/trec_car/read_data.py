@@ -12,6 +12,22 @@ import typing
 PageId = str
 PageName = str
 
+class CborElementNotDefinedException(Exception):
+    def __init__(self, cbor):
+        self.cbor = cbor
+        Exception.__init__(self, 'unknown Cbor element encountrered: %s' % str(cbor))
+
+class WrongCarFileException(Exception):
+    def __init__(self, file_type, expected_file_types):
+        self.file_type = file_type
+        self.expected_file_types = expected_file_types
+        Exception.__init__(self, 'Open method does not support CAR file type: %s. Instead expect following CAR file types: %s' % (str(file_type), str(expected_file_types)))
+
+class BrokenCborFileException(Exception):
+    def __init__(self):
+        Exception.__init__(self, 'Corrupt, incomplete, or otherwise broken CBOR file. Please re-download or contact the organizers or use appropriate reader to open this file.')
+
+
 class Page(object):
     """
     The name and skeleton of a Wikipedia page.
@@ -52,7 +68,7 @@ class Page(object):
         return [child.nested_headings() for child in self.child_sections]
 
     def flat_headings_list(self):
-        """
+        """                                                                                                return
         Returns a flat list of headings contained by the :class:`Page`.
 
         :rtype: typing.List[Section]
@@ -69,12 +85,21 @@ class Page(object):
         deep_headings = self.deep_headings_list()
         return list(flatten([], deep_headings))
 
+    def get_infoboxes(self):
+        toplevel_infoboxes = [child for child in self.skeleton if isinstance(child, InfoBox)]
+        section_infoboxes = [section.get_infoboxes()
+                             for sections
+                             in  self.flat_headings_list()
+                             for section in sections]
+        return toplevel_infoboxes + list(itertools.chain.from_iterable(section_infoboxes))
+
+
     @staticmethod
     def from_cbor(cbor):
-        assert cbor[0] == 0 or cbor[0] == 1 # tag
-        # assert cbor[1][0] == 0 # PageName tag
+
+        if not (cbor[0] == 0 or cbor[0] == 1): # tag
+            raise CborElementNotDefinedException(cbor)
         pagename = cbor[1]
-        # assert cbor[2][0] == 0 # PageId tag
         pageId = cbor[2].decode('ascii')
 
         if len(cbor)==4:
@@ -136,8 +161,7 @@ class PageType(object):
                 targetPage = target.decode('ascii')
             return RedirectPage(targetPage)
         else:
-            print("Deserialisation error for PageType cbor="+cbor)
-            assert(False)
+            raise CborElementNotDefinedException(cbor)
 
 class ArticlePage(PageType):
     ''
@@ -235,9 +259,9 @@ class PageMetadata(object):
         catStr = ("" if self.redirectNames is None else (" categories = "+", ".join([name for name in (self.categoryNames or [])])))
         inlinkStr = ("" if self.inlinkIds is None else (" inlinks = "+", ".join([name for name in self.inlinkIds])))
         # inlinkAnchorStr = str (self.inlinkAnchors)
-        inlinkAnchorStr = ("" if self.inlinkAnchors is None else \
-                                (" inlinkAnchors = "+", ".join( \
-                                    [ ("%s: %d" % (name, freq)) for (name, freq) in self.inlinkAnchors] \
+        inlinkAnchorStr = ("" if self.inlinkAnchors is None else
+                                (" inlinkAnchors = "+", ".join(
+                                    [ ("%s: %d" % (name, freq)) for (name, freq) in self.inlinkAnchors]
                                     # [ ("%s: " % (name)) for (name, freq) in self.inlinkAnchors] \
                                 )))
         return  "%s \n%s \n%s \n%s \n%s\n" % (redirStr, disamStr, catStr, inlinkStr, inlinkAnchorStr)
@@ -307,25 +331,31 @@ class PageSkeleton(object):
     @staticmethod
     def from_cbor(cbor):
         tag = cbor[0]
-        if tag == 0:
+        if tag == 0: # section
             heading = cbor[1]
             headingId = cbor[2].decode('ascii')
             return Section(heading, headingId, map(PageSkeleton.from_cbor, cbor[3]))
-        elif tag == 1:
+        elif tag == 1: # para-wrapper
             return Para(Paragraph.from_cbor(cbor[1]))
-        elif tag == 2:
+        elif tag == 2: #images
             imageUrl = cbor[1]
             caption = [PageSkeleton.from_cbor(elem) for elem in cbor[2]]
             return Image(imageUrl, caption=caption)
-        elif tag == 3:
+        elif tag == 3:   # paragraph
             level = cbor[1]
             body = Paragraph.from_cbor(cbor[2])
             return List(level, body)
+        elif tag == 4: # infobox
+            infobox_title = cbor[1]
+            cbor_entries = cbor[2]
+            entries = [ (kv[0], PageSkeleton.from_cbor(kv[1][0])) for kv in cbor_entries if kv[1] and kv[1][0]]  # if no value is defined kv[1] will be null.
+            return InfoBox(infobox_title, entries)
         else:
-            assert(False)
+            raise CborElementNotDefinedException(cbor)
 
     def get_text(self):
         raise NotImplementedError
+
 
 class Section(PageSkeleton):
     """
@@ -368,6 +398,9 @@ class Section(PageSkeleton):
 
     def get_text(self):
         return '\n'.join(child.get_text() for child in self.children)
+
+    def get_infoboxes(self):
+        return [child for child in self.children if isinstance(child, InfoBox)]
 
 class Para(PageSkeleton):
     """
@@ -439,6 +472,30 @@ class List(PageSkeleton):
     def get_text(self):
         return self.body.get_text()
 
+
+class InfoBox(PageSkeleton):
+    def __init__(self, infobox_type, entries):
+        """
+        An list element within a Wikipedia page.
+
+        .. attribute:: infobox_type
+
+           :rtype: str
+
+           The title/type of the infobox
+
+        .. attribute::  entries
+
+           Key-value pair, where key is a string, and value is a :class:`PageSkeleton` containing the value. Values are often paragraphs or images, but they can also be lists.
+        """
+        self.title = infobox_type
+        self.entries = entries
+
+    def __str__(self):
+        return self.title+ "\n"+  ("\n".join([key+": "+str(values) for (key,values) in self.entries]))
+
+
+
 class Paragraph(object):
     """
     A paragraph.
@@ -449,7 +506,9 @@ class Paragraph(object):
 
     @staticmethod
     def from_cbor(cbor):
-        assert cbor[0] == 0
+        if (not cbor[0] == 0):
+            raise CborElementNotDefinedException(cbor)
+
         paragraphId = cbor[1].decode('ascii')
         return Paragraph(paragraphId, map(ParaBody.from_cbor, cbor[2]))
 
@@ -481,7 +540,7 @@ class ParaBody(object):
             linkTargetId = cbor_[3].decode('ascii')
             return ParaLink(cbor_[1], linkSection, linkTargetId, cbor_[4])
         else:
-            assert(False)
+            raise CborElementNotDefinedException(cbor)
 
     @abstractmethod
     def get_text(self):
@@ -557,10 +616,14 @@ def _iter_with_header(file, parse, expected_file_types):
     if isinstance(maybe_hdr, list) and maybe_hdr[0] == 'CAR':
         # we have a header
         file_type = maybe_hdr[1][0]
-        assert file_type in expected_file_types, ('File type tage is expected to be %s but given file is of type %s' % (expected_file_types, file_type))
+        if not file_type in expected_file_types:
+            # print( 'File type tag is expected to be ', (" ".join(expected_file_types)), 'but given file is of type ', file_type)
+            # print('Did not expect file of type', file_type)
+            raise WrongCarFileException(file_type, expected_file_types)
 
         # read beginning of variable-length list
-        assert file.read(1) == b'\x9f'
+        if (not file.read(1) == b'\x9f'):
+            raise BrokenCborFileException()
     else:
         yield parse(maybe_hdr)
 

@@ -1,16 +1,15 @@
 from trec_car.read_data import *
 import sys
 
-if len(sys.argv)<4:
-    print("usage ",sys.argv[0]," articlefile outlinefile paragraphfile")
+if len(sys.argv)<1 or len(sys.argv)>3:
+    print("usage ",sys.argv[0]," articlefile [outlinefile paragraphfile]")
     exit()
 
 articles=sys.argv[1]
-outlines=sys.argv[2]
-paragraphs=sys.argv[3]
 
 
 # to open either pages or outlines use iter_annotations
+# See docstrings of respective objects for more documentation.
 
 with open(articles, 'rb') as f:
     for p in iter_pages(f):
@@ -18,9 +17,15 @@ with open(articles, 'rb') as f:
         print('\npageid:', p.page_id)
         print('\nmeta:', p.page_meta)
 
+        # get infoboxes
+        print('\ninfoboxes:')
+        for box in p.get_infoboxes():
+            print(box)
+        print()
+
         # get one data structure with nested (heading, [children]) pairs
         headings = p.nested_headings()
-        #print(headings)
+        print("headings", [section.heading for (section, content) in headings])
 
         if len(p.outline())>0:
             print( p.outline()[0].__str__())
@@ -29,6 +34,13 @@ with open(articles, 'rb') as f:
 
             print('flat headings= ' ,["/".join([str(section.heading) for section in sectionpath]) for sectionpath in p.flat_headings_list()])
 
+
+
+if (len(sys.argv)==1):
+    sys.exit()
+
+outlines=sys.argv[2]
+paragraphs=sys.argv[3]
 
 
 
