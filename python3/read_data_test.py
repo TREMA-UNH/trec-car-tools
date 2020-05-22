@@ -27,6 +27,11 @@ with open(articles, 'rb') as f:
         headings = p.nested_headings()
         print("headings", [section.heading for (section, content) in headings])
 
+        print("sections with content: ")
+        for (section, _) in headings:
+                if section:
+                    print (section.get_text())
+
         if len(p.outline())>0:
             print( p.outline()[0].__str__())
 

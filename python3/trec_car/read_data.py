@@ -494,7 +494,8 @@ class InfoBox(PageSkeleton):
     def __str__(self):
         return self.title+ "\n"+  ("\n".join([key+": "+str(values) for (key,values) in self.entries]))
 
-
+    def get_text(self):
+        return ""
 
 class Paragraph(object):
     """
