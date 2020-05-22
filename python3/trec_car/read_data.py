@@ -385,10 +385,13 @@ class Section(PageSkeleton):
         self.children = list(children)
         self.child_sections =  [child for child in self.children if isinstance(child, Section)]
 
-    def __str__(self, level=1):
+    def str_(self, level):
         bar = "".join("="*level)
-        children = "".join(c.__str__(level=level+1) for c in self.children)
+        children = "".join(c.str_(level=level+1) for c in self.children)
         return "\n%s %s %s\n\n%s" % (bar, self.heading, bar, children)
+
+    def __str__(self):
+        return self.str_(level=1)
 
     def __getitem__(self, idx):
         return self.children[idx]
@@ -415,8 +418,11 @@ class Para(PageSkeleton):
     def __init__(self, paragraph):
         self.paragraph = paragraph
 
-    def __str__(self, level=None):
+    def str_(self, level=None):
         return str(self.paragraph)
+
+    def __str__(self):
+        return self.str_()
 
     def get_text(self):
         return self.paragraph.get_text()
@@ -442,8 +448,11 @@ class Image(PageSkeleton):
         self.caption = caption
         self.imageurl = imageurl
 
-    def __str__(self, level=None):
+    def str_(self, level=None):
         return str("!["+self.imageurl+"]. Caption: "+(''.join([str(skel) for skel in self.caption])))
+
+    def __str__(self):
+        return self.str_()
 
     def get_text(self):
         return '\n'.join(skel.get_text() for skel in self.caption)
@@ -466,8 +475,12 @@ class List(PageSkeleton):
         self.level = level
         self.body = body
 
-    def __str__(self, level=None):
+    def str_(self, level=None):
         return str("*" * self.level + " " + str(self.body) + '\n')
+
+    def __str__(self):
+        return self.str_()
+
 
     def get_text(self):
         return self.body.get_text()
@@ -491,8 +504,13 @@ class InfoBox(PageSkeleton):
         self.title = infobox_type
         self.entries = entries
 
-    def __str__(self):
+    def str_(self, level=None):
         return self.title+ "\n"+  ("\n".join([key+": "+str(values) for (key,values) in self.entries]))
+
+    def __str__(self):
+        return self.str_()
+
+
 
     def get_text(self):
         return ""
@@ -521,8 +539,12 @@ class Paragraph(object):
         """
         return ''.join([body.get_text() for body in self.bodies])
 
-    def __str__(self, level=None):
+    def str_(self, level=None):
         return ' '.join(str(body) for body in self.bodies)
+
+    def __str__(self):
+        return self.str_()
+
 
 class ParaBody(object):
     """
@@ -568,8 +590,12 @@ class ParaText(ParaBody):
     def get_text(self):
         return self.text
 
-    def __str__(self, level=None):
+    def str_(self, level=None):
         return self.text
+
+    def __str__(self):
+        return self.str_()
+
 
 class ParaLink(ParaBody):
     """
@@ -609,8 +635,12 @@ class ParaLink(ParaBody):
     def get_text(self):
         return self.anchor_text
 
-    def __str__(self, level=None):
+    def str_(self, level=None):
         return "[%s](%s)" % (self.anchor_text, self.page)
+
+    def __str__(self):
+        return self.str_()
+
 
 def _iter_with_header(file, parse, expected_file_types):
     maybe_hdr = cbor.load(file)

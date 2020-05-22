@@ -1,2 +1,2 @@
-cbor>=0.1.4
-typing
+cbor>=1.0.0
+typing>=3.6.2
