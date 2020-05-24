@@ -25,12 +25,18 @@ with open(articles, 'rb') as f:
 
         # get one data structure with nested (heading, [children]) pairs
         headings = p.nested_headings()
-        print("headings", [section.heading for (section, content) in headings])
+        # print("headings", [section.heading for (section, content) in headings])
 
         print("sections with content: ")
         for (section, _) in headings:
-                if section:
-                    print (section.get_text())
+            if section:
+                print (section.get_text())
+
+        print("sections with content: ")
+        for section in p.child_sections:
+            if section:
+                print ('== ', section.heading ,' ==')
+                print (section.get_text_with_headings(False))
 
         if len(p.outline())>0:
             print( p.outline()[0].__str__())

@@ -134,7 +134,13 @@ class Page(object):
         return self.child_sections
 
     def get_text(self):
+        """Include all visible text below this elements. Includes Captions of images, but no headings and no infoboxes. See `get_text_with_headings` for a version that includes headings."""
         return '\n'.join(skel.get_text() for skel in self.skeleton)
+
+
+    def get_text_with_headings(self, include_heading = False):
+        """Include all visible text below this elements. While the heading of this element is excluded, headings of subsections will be included. Captions of images are excluded."""
+        return '\n'.join(skel.get_text_with_headings(include_heading = True) for skel in self.skeleton)
 
 class PageType(object):
     """
@@ -354,6 +360,11 @@ class PageSkeleton(object):
             raise CborElementNotDefinedException(cbor)
 
     def get_text(self):
+        """Includes visible text of this element and below. Headings are excluded. Image Captions are included. Infoboxes are ignored. (For a version with headers and no captions see `get_text_with_headings` """
+        raise NotImplementedError
+
+    def get_text_with_headings(self, include_heading = False):
+        """Include all visible text below this elements. While the heading of this element is excluded, headings of subsections will be included. Captions of images are excluded."""
         raise NotImplementedError
 
 
@@ -402,6 +413,11 @@ class Section(PageSkeleton):
     def get_text(self):
         return '\n'.join(child.get_text() for child in self.children)
 
+    def get_text_with_headings(self, include_heading = False):
+        opt_heading = self.heading + "\n" if include_heading else ""
+        return  opt_heading + '\n'.join(child.get_text_with_headings(include_heading = True) for child in self.children)
+
+
     def get_infoboxes(self):
         return [child for child in self.children if isinstance(child, InfoBox)]
 
@@ -426,6 +442,9 @@ class Para(PageSkeleton):
 
     def get_text(self):
         return self.paragraph.get_text()
+
+    def get_text_with_headings(self, include_heading = False):
+        return self.get_text()
 
 class Image(PageSkeleton):
     """
@@ -457,6 +476,9 @@ class Image(PageSkeleton):
     def get_text(self):
         return '\n'.join(skel.get_text() for skel in self.caption)
 
+    def get_text_with_headings(self, include_heading = False):
+        return ''
+
 class List(PageSkeleton):
     """
     An list element within a Wikipedia page.
@@ -484,6 +506,9 @@ class List(PageSkeleton):
 
     def get_text(self):
         return self.body.get_text()
+
+    def get_text_with_headings(self, include_heading = False):
+        return self.get_text()
 
 
 class InfoBox(PageSkeleton):
@@ -513,7 +538,11 @@ class InfoBox(PageSkeleton):
 
 
     def get_text(self):
-        return ""
+        return ''
+
+    def get_text_with_headings(self, include_heading = False):
+        return ''
+
 
 class Paragraph(object):
     """
