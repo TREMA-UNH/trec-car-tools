@@ -14,13 +14,16 @@
 from trec_car.read_data import *
 
 class Annotation():
+    """Wraps a semantic annotation with offset information """
     def __init__(self, start, end, annotation):
         self.start = start
         self.end = end
         self.annotation = annotation
 
 class AnnotatedContentBuilder():
-
+    """Builds a string iteratively and keeps track of offsets.
+       Chunks of plain text and semantic annotations need to added in order
+    """
     def __init__(self):
         self.content = ""
         self.offset = 0
@@ -42,7 +45,7 @@ class AnnotatedContentBuilder():
 
 
 def annotate_section_content(section):
-
+    """ Example implementation to break out the content of a (top-level) section with entity links """
     def annotated_content(skel, contentBuilder):
             if isinstance(skel, Section):
                 contentBuilder.append('\n')
