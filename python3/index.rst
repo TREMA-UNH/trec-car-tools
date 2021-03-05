@@ -14,7 +14,7 @@ This library requires Python 3.3 or greater. It can can be installed with
   python3 ./setup.py install
 
 If you are using `Anaconda <https://www.anaconda.com/>`_, install the ``cbor``
-library for Python 3.5 / 3.6: ::
+library for Python 3.6: ::
 
   conda install -c laura-dietz cbor=1.0.0 
         
