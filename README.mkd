@@ -10,11 +10,11 @@ Note that in order to allow to compile your project for two trec-car format vers
 
 
 Current support for
-- Python 3.5 or 3.6
+- Python 3.6
 - Java 1.8
 
 If you are using [Anaconda](https://www.anaconda.com/), install the `cbor`
-library for Python 3.5 / 3.6:
+library for Python 3.6:
 ```
 conda install -c laura-dietz cbor=1.0.0 
 ```

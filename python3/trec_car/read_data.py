@@ -1,4 +1,4 @@
-# Use python 3.5 or higher
+# Use python 3.6 or higher
 # obsolete:  conda install -c auto cbor=0.1.4
 
 from __future__ import print_function

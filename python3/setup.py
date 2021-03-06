@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='trec-car-tools',
-    version='2.5.3',
+    version='2.5.4',
     packages=['trec_car'],
     url='https://github.com/TREMA-UNH/trec-car-tools/python3',
     # download_url='https://github.com/TREMA-UNH/trec-car-tools/archive/2.0.tar.gz',
@@ -12,12 +12,10 @@ setup(
     author='laura-dietz',
     author_email='Laura.Dietz@unh.edu',
     description='Support tools for TREC CAR participants. Also see trec-car.cs.unh.edu',
-    install_requires=['cbor>=1.0.0', 'typing>=3.6.2', 'numpy>=1.11.2'],
-    python_requires='>=3',
+    install_requires=['cbor>=1.0.0', 'numpy>=1.11.2'],
+    python_requires='>=3.6',
     classifiers=[
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8'
