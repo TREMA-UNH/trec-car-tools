@@ -4,7 +4,7 @@
 
 Development tools for participants of the TREC Complex Answer Retrieval track.
 
-Data release support for v1.5 and v2.0.
+Data release support for v1.5 and v2.0. and v2.6
 
 Note that in order to allow to compile your project for two trec-car format versions, the maven artifact Id was changed to `treccar-tools-v2` with version 2.0, and the package path changed to `treccar_v2` 
 
@@ -47,7 +47,7 @@ add the trec-car-tools dependency:
         <dependency>     
 	    <groupId>com.github.TREMA-UNH</groupId>
 	    <artifactId>trec-car-tools-java</artifactId>
-	    <version>17</version>
+	    <version>19</version>
         </dependency>
 ~~~~
 
@@ -84,6 +84,8 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
      CategoryIds         -> [$pageId] 
      InlinkIds           -> [$pageId] 
      InlinkAnchors       -> [$anchorText] 
+     WikiDataQid         -> [$qid] 
+     PageTags            -> [$pageTags] 
      
      PageSkeleton -> Section | Para | Image | ListItem
      Section      -> $sectionHeading [PageSkeleton]
