@@ -76,7 +76,7 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
 ~~~~~
      Page         -> $pageName $pageId [PageSkeleton] PageType PageMetadata
      PageType     -> ArticlePage | CategoryPage | RedirectPage ParaLink | DisambiguationPage
-     PageMetadata -> RedirectNames DisambiguationNames DisambiguationIds CategoryNames CategoryIds InlinkIds InlinkAnchors
+     PageMetadata -> RedirectNames DisambiguationNames DisambiguationIds CategoryNames CategoryIds InlinkIds InlinkAnchors WikiDataQid SiteId PageTags
      RedirectNames       -> [$pageName] 
      DisambiguationNames -> [$pageName] 
      DisambiguationIds   -> [$pageId] 
@@ -85,6 +85,7 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
      InlinkIds           -> [$pageId] 
      InlinkAnchors       -> [$anchorText] 
      WikiDataQid         -> [$qid] 
+     SiteId              -> [$siteId] 
      PageTags            -> [$pageTags] 
      
      PageSkeleton -> Section | Para | Image | ListItem
