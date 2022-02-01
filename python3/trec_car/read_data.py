@@ -244,9 +244,28 @@ class PageMetadata(object):
         :rtype: str
 
         (Anchor text, frequency) of pages containing inlinks
+
+    .. attribute:: wikidataQid
+
+        :rtype: str
+
+        Language and time independent Wikidata IDs (e.g. Q12345)
+
+    .. attribute:: siteId
+
+        :rtype: str
+
+        SiteId (e.g. enwiki). The combination of WikidataQid and SiteId identifies a page in a wikipedia across time stamps. Note that PageName and PageId can change over time.
+
+    .. attribute:: pageTags
+
+        :rtype: str
+
+        Template tags of pages, e.g. "Good article" or "Vital article"
+
     """
     def __init__(self, redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds,
-                 inlinkAnchors):
+                 inlinkAnchors, wikiDataQid, siteId, pageTags):
         self.inlinkAnchors = inlinkAnchors
         self.inlinkIds = inlinkIds
         self.categoryIds = categoryIds
@@ -254,10 +273,13 @@ class PageMetadata(object):
         self.disambiguationIds = disambiguationIds
         self.disambiguationNames = disambiguationNames
         self.redirectNames = redirectNames
+        self.wikiDataQid = wikiDataQid
+        self.siteId = siteId
+        self.pageTags = pageTags
 
     @staticmethod
     def default():
-        return PageMetadata(None, None, None, None, None, None, None)
+        return PageMetadata(None, None, None, None, None, None, None, None, None, None)
 
     def __str__(self):
         redirStr = ("" if self.redirectNames is None else (" redirected = "+", ".join([name for name in self.redirectNames])))
@@ -270,7 +292,10 @@ class PageMetadata(object):
                                     [ ("%s: %d" % (name, freq)) for (name, freq) in self.inlinkAnchors]
                                     # [ ("%s: " % (name)) for (name, freq) in self.inlinkAnchors] \
                                 )))
-        return  "%s \n%s \n%s \n%s \n%s\n" % (redirStr, disamStr, catStr, inlinkStr, inlinkAnchorStr)
+        wikiDataStr = ("" if self.wikiDataQid is None else (" wikiDataQid = "+self.wikiDataQid))
+        siteIdStr = ("" if self.siteId is None else (" siteId = "+self.siteId))
+        pageTagsStr = ("" if self.pageTags is None else (" pageTags = "+", ".join([name for name in (self.pageTags or [])])))
+        return  "%s \n%s \n%s \n%s \n%s\n%s \n%s \n%s \n" % (redirStr, disamStr, catStr, inlinkStr, inlinkAnchorStr, wikiDataStr, siteIdStr, pageTagsStr)
 
     @staticmethod
     def from_cbor(cbor):
@@ -281,6 +306,9 @@ class PageMetadata(object):
         categoryIds=None
         inlinkIds=None
         inlinkAnchors=None
+        wikiDataQid=None
+        siteId=None
+        pageTags=None
 
         def decodeListOfIdList(cbor):
             if len(cbor)==0: return None
@@ -321,9 +349,15 @@ class PageMetadata(object):
             elif tag == 7:
                 # compatability with v2.0
                 inlinkAnchors = decodeListOfNameIntList(cbor_data)
+            elif tag == 8:
+                wikiDataQid=cbor_data
+            elif tag == 9:
+                siteId=cbor_data
+            elif tag == 10:
+                pageTags=decodeListOfNameList(cbor_data)
             i+=2
 
-        return PageMetadata(redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds, inlinkAnchors)
+        return PageMetadata(redirectNames, disambiguationNames, disambiguationIds, categoryNames, categoryIds, inlinkIds, inlinkAnchors, wikiDataQid, siteId, pageTags)
 
 class PageSkeleton(object):
     """
