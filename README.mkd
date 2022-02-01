@@ -88,7 +88,7 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
      SiteId              -> [$siteId] 
      PageTags            -> [$pageTags] 
      
-     PageSkeleton -> Section | Para | Image | ListItem
+     PageSkeleton -> Section | Para | Image | ListItem | Infobox
      Section      -> $sectionHeading [PageSkeleton]
      Para         -> Paragraph
      Paragraph    -> $paragraphId, [ParaBody]
@@ -97,6 +97,7 @@ Articles, outlines, paragraphs are all described with CBOR following this gramma
      ParaBody     -> ParaText | ParaLink
      ParaText     -> $text
      ParaLink     -> $targetPage $targetPageId $linkSection $anchorText
+     Infobox      -> $infoboxName [($key, [PageSkeleton])]
 ~~~~~
 
 You can use any CBOR serialization library. Below a convenience library for reading the data into Python (3.5)
