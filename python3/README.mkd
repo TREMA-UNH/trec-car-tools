@@ -2,3 +2,11 @@
 
 See [ReadTheDocs](https://trec-car-tools.readthedocs.io/en/latest/) for Python
 usage and reference documentation.
+
+Install via one of these options
+
+* `python3 setup.py install`
+
+* `pip install trec-car-tools`
+
+* `conda install -c laura-dietz trec-car-tools=2.6`
