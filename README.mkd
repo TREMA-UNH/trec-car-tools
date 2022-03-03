@@ -47,7 +47,7 @@ add the trec-car-tools dependency:
         <dependency>     
 	    <groupId>com.github.TREMA-UNH</groupId>
 	    <artifactId>trec-car-tools-java</artifactId>
-	    <version>19</version>
+	    <version>20</version>
         </dependency>
 ~~~~
 
