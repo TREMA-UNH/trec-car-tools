@@ -51,7 +51,7 @@ To list the text of all paragraphs in a paragarphs file one might write,
 .. code-block:: python
 
    for para in read_data.iter_paragraphs(open('train.test200.cbor', 'rb')):
-       print(para.getText())
+       print(para.get_text())
 
 Basic types
 -----------
